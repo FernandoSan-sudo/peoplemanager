@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const catalogosController = require("../controllers/catalogos.controller");
+const { autenticar } = require("../middlewares/auth");
+const { manejarAsync } = require("../middlewares/errores");
 
-router.get("/roles", catalogosController.obtenerRoles);
-router.get("/areas", catalogosController.obtenerAreas);
-router.get("/cargos", catalogosController.obtenerCargos);
-router.get("/tipos-solicitud", catalogosController.obtenerTiposSolicitud);
+router.use(autenticar);
+
+router.get("/roles", manejarAsync(catalogosController.obtenerRoles));
+router.get("/areas", manejarAsync(catalogosController.obtenerAreas));
+router.get("/cargos", manejarAsync(catalogosController.obtenerCargos));
+router.get("/tipos-solicitud", manejarAsync(catalogosController.obtenerTiposSolicitud));
 
 module.exports = router;

@@ -13,7 +13,14 @@
  */
 
 require("./env");
-const { Pool } = require("pg");
+const { Pool, types } = require("pg");
+
+// Las columnas DATE (fecha_turno, fecha_inicio, fecha_fin) se devuelven
+// tal cual vienen de PostgreSQL ("2026-06-03"). Sin esto, "pg" las
+// convierte en un Date de JavaScript a medianoche local y el JSON termina
+// como "2026-06-03T05:00:00.000Z", lo que rompe los filtros por fecha y
+// los <input type="date"> del front-end. 1082 es el OID del tipo DATE.
+types.setTypeParser(1082, (valor) => valor);
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -22,6 +29,14 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   options: "-c search_path=pm",
+});
+
+// Si PostgreSQL cierra una conexión inactiva (por ejemplo, al reiniciar el
+// servicio), el pool emite "error". Sin este manejador el proceso de Node se
+// detendría; con él, se informa y el pool abre una conexión nueva en la
+// siguiente consulta.
+pool.on("error", (error) => {
+  console.error("Se perdió una conexión con PostgreSQL:", error.message);
 });
 
 pool

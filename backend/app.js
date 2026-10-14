@@ -6,8 +6,14 @@ const catalogosRoutes = require("./routes/catalogos.routes");
 const turnosRoutes = require("./routes/turnos.routes");
 const asistenciaRoutes = require("./routes/asistencia.routes");
 const solicitudesRoutes = require("./routes/solicitudes.routes");
+const reportesRoutes = require("./routes/reportes.routes");
+const auditoriaRoutes = require("./routes/auditoria.routes");
+const { rutaNoEncontrada, manejarErrores } = require("./middlewares/errores");
 
 const app = express();
+
+// No anunciar "X-Powered-By: Express" (le da pistas a un atacante).
+app.disable("x-powered-by");
 
 // CORS: el frontend se abre con Live Server (http://127.0.0.1:5500) y la API
 // corre en el puerto 3000; son orígenes distintos, así que el navegador exige
@@ -20,21 +26,31 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/catalogos", catalogosRoutes);
 app.use("/api/turnos", turnosRoutes);
 app.use("/api/asistencia", asistenciaRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
+app.use("/api/reportes", reportesRoutes);
+app.use("/api/auditoria", auditoriaRoutes);
 
 app.get("/", (req, res) => {
   res.json({ mensaje: "API PeopleManager (esquema pm) funcionando correctamente" });
 });
 
+// Siempre al final: rutas inexistentes y errores no controlados.
+app.use(rutaNoEncontrada);
+app.use(manejarErrores);
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+
+// Solo se levanta el servidor al ejecutar "node app.js" (no al importarlo desde las pruebas).
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
+  });
+}
 
 module.exports = app;
