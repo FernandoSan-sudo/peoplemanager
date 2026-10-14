@@ -26,6 +26,8 @@
 
 > Proyecto formativo de **Johan Fernando Muñoz** — Técnico en Programación de Software, SENA.
 
+📘 **[Manual de usuario (PDF)](docs/Manual_de_usuario_PeopleManager.pdf)** · 🧪 **[Informe de pruebas](evidencias/Informe_de_pruebas_PeopleManager.docx)**
+
 ---
 
 ## Documentación de la evidencia (GA4-220501096-AA1-EV02)
