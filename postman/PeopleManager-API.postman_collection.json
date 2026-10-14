@@ -1,169 +1,1805 @@
 {
   "info": {
-    "name": "PeopleManager API (esquema pm)",
-    "description": "Colección de pruebas para la API de PeopleManager contra la base de datos real 'peoplemanager' (esquema pm): usuarios, catálogos, turnos, asistencia y solicitudes.",
+    "name": "PeopleManager API (esquema pm) v2",
+    "description": "Colección de la API de PeopleManager. Ejecútala en orden con el Collection Runner.\n\n1. 'Autenticación > Login' guarda el token en la variable {{token}}; todas las demás peticiones lo envían como 'Authorization: Bearer'.\n2. Cambia 'correo' y 'password' del Login por los de un usuario Administrador de tu base de datos.\n3. Las fechas ({{manana}}, {{en10}}...) se calculan solas antes de cada petición.\n\nNota: la colección CREA datos de prueba (un usuario, turnos y solicitudes) y al final desactiva al usuario creado.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas relativas a hoy (hora local) para que la colección funcione cualquier día.",
+          "const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');",
+          "const enDias = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return iso(d); };",
+          "pm.collectionVariables.set('hoy', enDias(0));",
+          "pm.collectionVariables.set('manana', enDias(1));",
+          "pm.collectionVariables.set('en10', enDias(10));",
+          "pm.collectionVariables.set('en14', enDias(14));",
+          "pm.collectionVariables.set('en20', enDias(20));",
+          "pm.collectionVariables.set('en24', enDias(24));",
+          "pm.collectionVariables.set('en30', enDias(30));",
+          "const anterior = new Date(); anterior.setDate(1); anterior.setMonth(anterior.getMonth() - 1);",
+          "pm.collectionVariables.set('anioAnterior', anterior.getFullYear());",
+          "pm.collectionVariables.set('mesAnterior', anterior.getMonth() + 1);"
+        ]
+      }
+    }
+  ],
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000/api" },
-    { "key": "idUsuario", "value": "1" },
-    { "key": "idTurno", "value": "1" },
-    { "key": "idSolicitud", "value": "1" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "idSesion",
+      "value": ""
+    },
+    {
+      "key": "correoSesion",
+      "value": ""
+    },
+    {
+      "key": "idUsuarioNuevo",
+      "value": ""
+    },
+    {
+      "key": "idTurno",
+      "value": ""
+    },
+    {
+      "key": "idSolicitud",
+      "value": ""
+    },
+    {
+      "key": "idSolicitud2",
+      "value": ""
+    },
+    {
+      "key": "anioAnterior",
+      "value": ""
+    },
+    {
+      "key": "mesAnterior",
+      "value": ""
+    },
+    {
+      "key": "idNomina",
+      "value": ""
+    },
+    {
+      "key": "idActivo",
+      "value": ""
+    },
+    {
+      "key": "idActivoTemporal",
+      "value": ""
+    }
   ],
   "item": [
     {
-      "name": "Usuarios",
+      "name": "0. Autenticación",
       "item": [
         {
-          "name": "Login",
+          "name": "Sin token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/turnos"
+          }
+        },
+        {
+          "name": "Login con contraseña incorrecta → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401 o 403\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"no-existe@peoplemanager.com\",\n  \"password\": \"incorrecta\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (guarda el token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test('Devuelve token y rol', function () { pm.expect(json.token).to.be.a('string'); pm.expect(json.usuario.nombre_rol).to.exist; });",
+                  "pm.collectionVariables.set('token', json.token);",
+                  "pm.collectionVariables.set('idSesion', json.usuario.id_usuario);",
+                  "pm.collectionVariables.set('correoSesion', json.usuario.correo);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/usuarios/login",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"correo\": \"admin@peoplemanager.com\",\n  \"password\": \"admin123\"\n}"
-            }
+            },
+            "description": "Cambia el correo y la contraseña por los de un Administrador de tu base de datos."
           }
         },
         {
-          "name": "Listar usuarios",
-          "request": { "method": "GET", "url": "{{baseUrl}}/usuarios" }
-        },
-        {
-          "name": "Obtener usuario por id",
-          "request": { "method": "GET", "url": "{{baseUrl}}/usuarios/{{idUsuario}}" }
-        },
-        {
-          "name": "Crear usuario",
+          "name": "Mi perfil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/usuarios",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"numero_documento\": \"1010101010\",\n  \"nombre_completo\": \"Empleado de Prueba\",\n  \"correo\": \"empleado.prueba@peoplemanager.com\",\n  \"password\": \"clave123\",\n  \"id_rol\": 3,\n  \"id_area\": 1\n}"
-            }
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/perfil"
           }
-        },
-        {
-          "name": "Actualizar usuario",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/usuarios/{{idUsuario}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre_completo\": \"Nombre Actualizado\",\n  \"correo\": \"admin@peoplemanager.com\",\n  \"id_rol\": 1,\n  \"id_area\": null,\n  \"id_cargo\": null,\n  \"estado\": \"activo\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Eliminar usuario (lógico)",
-          "request": { "method": "DELETE", "url": "{{baseUrl}}/usuarios/{{idUsuario}}" }
         }
       ]
     },
     {
-      "name": "Catálogos",
+      "name": "1. Catálogos",
       "item": [
-        { "name": "Roles", "request": { "method": "GET", "url": "{{baseUrl}}/catalogos/roles" } },
-        { "name": "Áreas", "request": { "method": "GET", "url": "{{baseUrl}}/catalogos/areas" } },
-        { "name": "Cargos", "request": { "method": "GET", "url": "{{baseUrl}}/catalogos/cargos" } },
-        { "name": "Tipos de solicitud", "request": { "method": "GET", "url": "{{baseUrl}}/catalogos/tipos-solicitud" } }
+        {
+          "name": "Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/catalogos/roles"
+          }
+        },
+        {
+          "name": "Áreas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/catalogos/areas"
+          }
+        },
+        {
+          "name": "Cargos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/catalogos/cargos"
+          }
+        },
+        {
+          "name": "Tipos de solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/catalogos/tipos-solicitud"
+          }
+        }
       ]
     },
     {
-      "name": "Turnos",
+      "name": "2. Usuarios",
       "item": [
-        { "name": "Listar turnos", "request": { "method": "GET", "url": "{{baseUrl}}/turnos" } },
-        { "name": "Listar turnos de un usuario", "request": { "method": "GET", "url": "{{baseUrl}}/turnos?id_usuario={{idUsuario}}" } },
-        { "name": "Obtener turno por id", "request": { "method": "GET", "url": "{{baseUrl}}/turnos/{{idTurno}}" } },
         {
-          "name": "Crear turno",
+          "name": "Listar usuarios activos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios?estado=activo"
+          }
+        },
+        {
+          "name": "Crear usuario (Empleado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idUsuarioNuevo\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{$timestamp}}\",\n  \"nombre_completo\": \"Empleado de Prueba Postman\",\n  \"correo\": \"postman{{$timestamp}}@peoplemanager.com\",\n  \"password\": \"Prueba2026\",\n  \"id_rol\": 3\n}"
+            },
+            "description": "id_rol 3 = Empleado en la base de datos real. Verifica los ids con GET /catalogos/roles."
+          }
+        },
+        {
+          "name": "Crear con contraseña débil → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"123456789\",\n  \"nombre_completo\": \"Débil\",\n  \"correo\": \"debil@peoplemanager.com\",\n  \"password\": \"123\",\n  \"id_rol\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener usuario creado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}"
+          }
+        },
+        {
+          "name": "Actualizar usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_completo\": \"Empleado de Prueba (editado)\",\n  \"correo\": \"postman-editado{{$timestamp}}@peoplemanager.com\",\n  \"id_rol\": 3,\n  \"estado\": \"activo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar con correo de otro usuario → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});",
+                  "pm.test('Mensaje de correo duplicado', function () { pm.expect(pm.response.json().mensaje).to.include('correo'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_completo\": \"Empleado de Prueba\",\n  \"correo\": \"{{correoSesion}}\",\n  \"id_rol\": 3,\n  \"estado\": \"activo\"\n}"
+            },
+            "description": "Caso pedido en la retroalimentación: el UNIQUE de PostgreSQL (código 23505) se responde con 409, no con 500."
+          }
+        },
+        {
+          "name": "Restablecer contraseña (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password_nueva\": \"Nueva2026x\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Desbloquear cuenta no bloqueada → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}/desbloquear"
+          }
+        },
+        {
+          "name": "Id inválido → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/abc"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Turnos",
+      "item": [
+        {
+          "name": "Listar turnos (con filtros)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/turnos?desde={{hoy}}&hasta={{en30}}"
+          }
+        },
+        {
+          "name": "Crear turno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idTurno\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/turnos",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id_usuario\": 2,\n  \"fecha_turno\": \"2026-10-01\",\n  \"hora_inicio\": \"08:00\",\n  \"hora_fin\": \"17:00\",\n  \"id_area\": 1,\n  \"creado_por\": 1\n}"
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"fecha_turno\": \"{{manana}}\",\n  \"hora_inicio\": \"08:00\",\n  \"hora_fin\": \"16:00\"\n}"
             }
+          }
+        },
+        {
+          "name": "Turno que se cruza → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/turnos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"fecha_turno\": \"{{manana}}\",\n  \"hora_inicio\": \"10:00\",\n  \"hora_fin\": \"12:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Turno en fecha pasada → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/turnos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"fecha_turno\": \"2020-01-01\",\n  \"hora_inicio\": \"08:00\",\n  \"hora_fin\": \"16:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear turnos en lote (L-V)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Informa creados y omitidos', function () { const j = pm.response.json(); pm.expect(j.creados).to.be.an('array'); pm.expect(j.omitidos).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/turnos/lote",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"fecha_inicio\": \"{{en10}}\",\n  \"fecha_fin\": \"{{en14}}\",\n  \"hora_inicio\": \"14:00\",\n  \"hora_fin\": \"22:00\",\n  \"dias_semana\": [\n    1,\n    2,\n    3,\n    4,\n    5\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener turno (con estado calculado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Trae estado_asistencia', function () { pm.expect(pm.response.json().estado_asistencia).to.eql('pendiente'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/turnos/{{idTurno}}"
           }
         },
         {
           "name": "Actualizar turno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/turnos/{{idTurno}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fecha_turno\": \"2026-10-02\",\n  \"hora_inicio\": \"09:00\",\n  \"hora_fin\": \"18:00\",\n  \"id_area\": 1\n}"
+              "raw": "{\n  \"fecha_turno\": \"{{manana}}\",\n  \"hora_inicio\": \"07:00\",\n  \"hora_fin\": \"15:00\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Asistencia",
+      "item": [
+        {
+          "name": "Registrar entrada (turno de mañana → 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/asistencia/entrada",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_turno\": \"{{idTurno}}\"\n}"
+            },
+            "description": "La entrada solo se registra el mismo día del turno. Para ver un 201, crea un turno de HOY que incluya la hora actual y usa su id."
+          }
+        },
+        {
+          "name": "Registrar salida sin entrada → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/asistencia/salida",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_turno\": \"{{idTurno}}\"\n}"
             }
           }
         },
-        { "name": "Eliminar turno", "request": { "method": "DELETE", "url": "{{baseUrl}}/turnos/{{idTurno}}" } }
-      ]
-    },
-    {
-      "name": "Asistencia",
-      "item": [
         {
-          "name": "Registrar entrada",
+          "name": "Historial de asistencia (con horas trabajadas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/asistencia/entrada",
-            "body": { "mode": "raw", "raw": "{\n  \"id_turno\": {{idTurno}},\n  \"id_usuario\": {{idUsuario}}\n}" }
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/asistencia?desde={{hoy}}"
           }
         },
         {
-          "name": "Registrar salida",
+          "name": "Historial de un usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/asistencia/salida",
-            "body": { "mode": "raw", "raw": "{\n  \"id_turno\": {{idTurno}}\n}" }
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/asistencia/usuario/{{idSesion}}"
           }
-        },
-        { "name": "Historial de asistencia de un usuario", "request": { "method": "GET", "url": "{{baseUrl}}/asistencia/usuario/{{idUsuario}}" } }
+        }
       ]
     },
     {
-      "name": "Solicitudes",
+      "name": "5. Solicitudes",
       "item": [
-        { "name": "Listar solicitudes", "request": { "method": "GET", "url": "{{baseUrl}}/solicitudes" } },
-        { "name": "Listar solicitudes de un usuario", "request": { "method": "GET", "url": "{{baseUrl}}/solicitudes?id_usuario={{idUsuario}}" } },
-        { "name": "Obtener solicitud por id", "request": { "method": "GET", "url": "{{baseUrl}}/solicitudes/{{idSolicitud}}" } },
         {
-          "name": "Crear solicitud",
+          "name": "Crear solicitud a nombre de un empleado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idSolicitud\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/solicitudes",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id_usuario\": 2,\n  \"id_tipo\": 1,\n  \"fecha_inicio\": \"2026-10-10\",\n  \"fecha_fin\": \"2026-10-11\",\n  \"motivo\": \"Cita médica\"\n}"
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"id_tipo\": 2,\n  \"fecha_inicio\": \"{{en20}}\",\n  \"fecha_fin\": \"{{en24}}\",\n  \"motivo\": \"Vacaciones programadas de prueba desde Postman\"\n}"
+            },
+            "description": "id_tipo 2 = Vacaciones. Un gestor puede radicar a nombre de otro empleado."
+          }
+        },
+        {
+          "name": "Solicitud que se cruza → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
             }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"id_tipo\": 1,\n  \"fecha_inicio\": \"{{en20}}\",\n  \"fecha_fin\": \"{{en20}}\",\n  \"motivo\": \"Permiso que se cruza con las vacaciones\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Vacaciones en el pasado → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_tipo\": 2,\n  \"fecha_inicio\": \"2020-01-01\",\n  \"fecha_fin\": \"2020-01-05\",\n  \"motivo\": \"Fechas pasadas no permitidas\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar pendientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/solicitudes?estado=pendiente"
           }
         },
         {
           "name": "Aprobar solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/solicitudes/{{idSolicitud}}/aprobar",
-            "body": { "mode": "raw", "raw": "{\n  \"id_aprobador\": 1,\n  \"observacion_resp\": \"Aprobado\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacion_resp\": \"Aprobado según calendario\"\n}"
+            }
           }
         },
         {
-          "name": "Rechazar solicitud",
+          "name": "Aprobar de nuevo → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/solicitudes/{{idSolicitud}}/rechazar",
-            "body": { "mode": "raw", "raw": "{\n  \"id_aprobador\": 1,\n  \"observacion_resp\": \"No cumple con los requisitos\"\n}" }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes/{{idSolicitud}}/aprobar",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Turno en días de vacaciones aprobadas → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/turnos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"fecha_turno\": \"{{en20}}\",\n  \"hora_inicio\": \"08:00\",\n  \"hora_fin\": \"16:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear segunda solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idSolicitud2\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\",\n  \"id_tipo\": 1,\n  \"fecha_inicio\": \"{{en30}}\",\n  \"fecha_fin\": \"{{en30}}\",\n  \"motivo\": \"Permiso para cita médica de prueba\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Rechazar sin motivo → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes/{{idSolicitud2}}/rechazar",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Rechazar con motivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/solicitudes/{{idSolicitud2}}/rechazar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacion_resp\": \"Ese día hay inventario general\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Nómina",
+      "item": [
+        {
+          "name": "Vista previa del mes anterior",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Trae empleados y parámetros', function () { const j = pm.response.json(); pm.expect(j.empleados).to.be.an('array'); pm.expect(j.parametros.tarifas.ordinaria).to.eql(10000); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/nomina?anio={{anioAnterior}}&mes={{mesAnterior}}"
+          }
+        },
+        {
+          "name": "Mes futuro → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/nomina?anio=2099&mes=1"
+          }
+        },
+        {
+          "name": "Guardar nómina del mes anterior",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 o 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
+                  "});",
+                  "const g = pm.response.json().guardadas || []; if (g.length) pm.collectionVariables.set('idNomina', g[0].id_nomina);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/nomina/calcular",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anio\": \"{{anioAnterior}}\",\n  \"mes\": \"{{mesAnterior}}\"\n}"
+            },
+            "description": "Responde 409 si en ese mes no hay turnos. Solo recalcula nóminas en estado 'calculada'."
+          }
+        },
+        {
+          "name": "Ajuste con id inválido → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/nomina/0/ajustes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bonificaciones\": 10000,\n  \"descuentos\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Mis desprendibles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/nomina/mias"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Activos (productos)",
+      "item": [
+        {
+          "name": "Listar inventario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/activos"
+          }
+        },
+        {
+          "name": "Crear activo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idActivo\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_activo\": \"Portátil HP ProBook (Postman)\",\n  \"serial\": \"pm-{{$timestamp}}\",\n  \"id_area\": 1\n}"
+            },
+            "description": "El serial se guarda en mayúsculas y debe ser único."
+          }
+        },
+        {
+          "name": "Serial duplicado → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_activo\": \"Duplicado\",\n  \"serial\": \"PM-{{$timestamp}}\",\n  \"id_area\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Datos inválidos → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_activo\": \"\",\n  \"serial\": \"@@\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar activo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos/{{idActivo}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_activo\": \"Portátil HP ProBook 450 (Postman)\",\n  \"serial\": \"PM-{{$timestamp}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Asignar al empleado de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos/{{idActivo}}/asignar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idUsuarioNuevo}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Asignar un activo ya asignado → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos/{{idActivo}}/asignar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": \"{{idSesion}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar un activo asignado → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([409]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/activos/{{idActivo}}"
+          }
+        },
+        {
+          "name": "Registrar devolución",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos/{{idActivo}}/devolver",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacion\": \"Devuelto en buen estado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Trasladar a otra área",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos/{{idActivo}}/trasladar",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_area\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Historial del activo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Incluye el traslado', function () { pm.expect(pm.response.json().movimientos.map(m => m.tipo)).to.include('TRASLADO'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/activos/{{idActivo}}/historial"
+          }
+        },
+        {
+          "name": "Crear activo temporal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idActivoTemporal\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/activos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_activo\": \"Mouse temporal (Postman)\",\n  \"serial\": \"TMP-{{$timestamp}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar activo sin historial",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/activos/{{idActivoTemporal}}"
+          }
+        },
+        {
+          "name": "Mis equipos asignados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/activos/mios"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Reportes y auditoría",
+      "item": [
+        {
+          "name": "Resumen del día (dashboard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/reportes/resumen"
+          }
+        },
+        {
+          "name": "Asistencia por empleado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/reportes/asistencia?desde={{hoy}}&hasta={{en30}}"
+          }
+        },
+        {
+          "name": "Bitácora de auditoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auditoria?limite=20"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Limpieza",
+      "item": [
+        {
+          "name": "Eliminar turno de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/turnos/{{idTurno}}"
+          }
+        },
+        {
+          "name": "Desactivar usuario de prueba (eliminación lógica)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{idUsuarioNuevo}}"
+          }
+        },
+        {
+          "name": "Desactivarse a sí mismo → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{idSesion}}"
           }
         }
       ]
