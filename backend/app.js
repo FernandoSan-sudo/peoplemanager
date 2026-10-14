@@ -8,6 +8,7 @@ const asistenciaRoutes = require("./routes/asistencia.routes");
 const solicitudesRoutes = require("./routes/solicitudes.routes");
 const reportesRoutes = require("./routes/reportes.routes");
 const auditoriaRoutes = require("./routes/auditoria.routes");
+const nominaRoutes = require("./routes/nomina.routes");
 const { rutaNoEncontrada, manejarErrores } = require("./middlewares/errores");
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/asistencia", asistenciaRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
 app.use("/api/reportes", reportesRoutes);
 app.use("/api/auditoria", auditoriaRoutes);
+app.use("/api/nomina", nominaRoutes);
 
 app.get("/", (req, res) => {
   res.json({ mensaje: "API PeopleManager (esquema pm) funcionando correctamente" });

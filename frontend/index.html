@@ -35,6 +35,7 @@
           <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
           <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
           <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <li class="nav-item"><a class="nav-link" href="nomina.html" data-protected-link>Nómina</a></li>
           <!-- Visibles solo para los roles indicados (js/script.js) -->
           <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
           <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
@@ -265,6 +266,16 @@
               </div>
             </div>
           </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
+              <div class="card-body text-center">
+                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-cash-coin"></i></div>
+                <h3 class="h5 card-title">Nómina</h3>
+                <p class="card-text text-muted">Liquidación mensual desde la asistencia real: horas extra, recargos dominicales, incapacidades y desprendibles de pago.</p>
+                <a href="nomina.html" class="stretched-link small" data-protected-link>Ver módulo de nómina</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -287,6 +298,7 @@
         <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
         <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
         <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="nomina.html" class="me-3" data-protected-link>Nómina</a>
         <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
@@ -300,6 +312,7 @@
   <script src="js/services/AsistenciaService.js"></script>
   <script src="js/services/SolicitudService.js"></script>
   <script src="js/services/ReporteService.js"></script>
+  <script src="js/services/NominaService.js"></script>
   <script src="js/script.js"></script>
   <script src="js/paginas/dashboard.js"></script>
 </body>

@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!formulario) return;
 
   const parametros = new URLSearchParams(window.location.search);
-  const PAGINAS_PERMITIDAS = ["index.html", "turnos.html", "asistencia.html", "solicitudes.html", "usuarios.html", "reportes.html"];
+  const PAGINAS_PERMITIDAS = ["index.html", "turnos.html", "asistencia.html", "solicitudes.html", "usuarios.html", "reportes.html", "nomina.html"];
   const destino = PAGINAS_PERMITIDAS.includes(parametros.get("destino")) ? parametros.get("destino") : "index.html";
 
   // Si ya hay sesión abierta, no tiene sentido mostrar el login.
