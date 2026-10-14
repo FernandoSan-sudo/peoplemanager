@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">Logo de PeopleManager</title>
+  <circle cx="32" cy="32" r="30" fill="#0d6efd"/>
+  <circle cx="32" cy="32" r="30" fill="none" stroke="#f8f9fa" stroke-width="2"/>
+  <text x="32" y="40" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="middle">PM</text>
+</svg>

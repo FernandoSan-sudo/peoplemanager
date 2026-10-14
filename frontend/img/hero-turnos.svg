@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">Ilustración de gestión de turnos</title>
+  <desc id="heroDesc">Calendario con turnos asignados y personas del equipo</desc>
+  <rect x="0" y="0" width="520" height="380" fill="none"/>
+  <rect x="60" y="40" width="340" height="260" rx="16" fill="#e7f1ff"/>
+  <rect x="60" y="40" width="340" height="56" rx="16" fill="#0d6efd"/>
+  <rect x="60" y="80" width="340" height="16" fill="#0d6efd"/>
+  <circle cx="100" cy="68" r="7" fill="#ffffff"/>
+  <circle cx="125" cy="68" r="7" fill="#ffffff"/>
+  <circle cx="150" cy="68" r="7" fill="#ffffff"/>
+  <g fill="#ffffff" stroke="#cfe2ff" stroke-width="1">
+    <rect x="85" y="120" width="80" height="50" rx="8"/>
+    <rect x="180" y="120" width="80" height="50" rx="8"/>
+    <rect x="275" y="120" width="80" height="50" rx="8"/>
+    <rect x="85" y="185" width="80" height="50" rx="8"/>
+    <rect x="180" y="185" width="80" height="50" rx="8"/>
+    <rect x="275" y="185" width="80" height="50" rx="8"/>
+  </g>
+  <g fill="#0d6efd">
+    <rect x="95" y="140" width="60" height="8" rx="4"/>
+    <rect x="190" y="140" width="60" height="8" rx="4"/>
+    <rect x="285" y="205" width="60" height="8" rx="4"/>
+  </g>
+  <g fill="#198754">
+    <rect x="95" y="205" width="60" height="8" rx="4"/>
+    <rect x="285" y="140" width="60" height="8" rx="4"/>
+  </g>
+  <g fill="#ffc107">
+    <rect x="190" y="205" width="60" height="8" rx="4"/>
+  </g>
+  <circle cx="420" cy="120" r="26" fill="#0d6efd"/>
+  <circle cx="420" cy="108" r="10" fill="#ffffff"/>
+  <path d="M400 138 q20 -18 40 0 z" fill="#ffffff"/>
+  <circle cx="460" cy="190" r="22" fill="#198754"/>
+  <circle cx="460" cy="180" r="8.5" fill="#ffffff"/>
+  <path d="M443 205 q17 -15 34 0 z" fill="#ffffff"/>
+  <circle cx="415" cy="250" r="20" fill="#ffc107"/>
+  <circle cx="415" cy="241" r="7.5" fill="#ffffff"/>
+  <path d="M400 263 q15 -13 30 0 z" fill="#ffffff"/>
+</svg>

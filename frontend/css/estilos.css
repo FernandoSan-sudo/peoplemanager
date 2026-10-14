@@ -1,0 +1,640 @@
+/* =========================================================
+   PeopleManager - estilos.css
+   Estilos propios que complementan Bootstrap 5.
+
+   Paleta "confianza corporativa": azul/navy tomados del logo
+   de la marca + gris neutro + acento ámbar cálido. El azul y
+   el navy transmiten seriedad y estabilidad (propio de un
+   sistema de talento humano); el ámbar se usa con moderación
+   como acento y, sobre todo, como color del estado "Pendiente"
+   dentro del semáforo de estados de turnos.
+   ========================================================= */
+
+:root {
+  /* Colores de marca (extraídos del logo) */
+  --pm-primary: #045cd6;
+  --pm-primary-dark: #0b244d;
+  --pm-bg-soft: #eef4fd;
+  --pm-text-muted: #495057;
+  --pm-bg: #ffffff;
+  --pm-surface: #ffffff;
+  --pm-surface-alt: #f8f9fa;
+  --pm-text: #212529;
+  --pm-border: #e9ecef;
+  --pm-navbar-bg: #ffffff;
+  --pm-footer-bg: #0b244d;
+
+  /* Acento cálido */
+  --pm-accent: #e8a33d;
+  --pm-accent-dark: #c8841f;
+
+  /* Semáforo de estados */
+  --pm-success: #198754;
+  --pm-success-bg: #e7f5ec;
+  --pm-warning: #c8841f;
+  --pm-warning-bg: #fdf3e2;
+  --pm-danger: #dc3545;
+  --pm-danger-bg: #fbe9eb;
+}
+
+body[data-theme="dark"] {
+  --pm-primary: #7bb6ff;
+  --pm-primary-dark: #b8d8ff;
+  --pm-bg-soft: #162033;
+  --pm-text-muted: #dce7f6;
+  --pm-bg: #0f172a;
+  --pm-surface: #111827;
+  --pm-surface-alt: #1f2937;
+  --pm-text: #f8fafc;
+  --pm-border: #334155;
+  --pm-navbar-bg: #111827;
+  --pm-footer-bg: #020617;
+  --pm-accent: #fbbf24;
+  --pm-accent-dark: #f59e0b;
+  --pm-success-bg: #0f3d2e;
+  --pm-warning-bg: #4a2f0f;
+  --pm-danger-bg: #4b1d24;
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------
+   Reskin de Bootstrap: los componentes .btn-primary,
+   .text-primary y .bg-primary usan variables locales de
+   Bootstrap 5.3 (--bs-btn-bg, etc.) que no heredan de un
+   único color global, así que se sobrescriben aquí para que
+   toda la interfaz use la paleta de marca sin recompilar
+   Bootstrap.
+   --------------------------------------------------------- */
+.btn-primary {
+  --bs-btn-bg: var(--pm-primary);
+  --bs-btn-border-color: var(--pm-primary);
+  --bs-btn-hover-bg: var(--pm-primary-dark);
+  --bs-btn-hover-border-color: var(--pm-primary-dark);
+  --bs-btn-active-bg: var(--pm-primary-dark);
+  --bs-btn-active-border-color: var(--pm-primary-dark);
+  --bs-btn-disabled-bg: var(--pm-primary);
+  --bs-btn-disabled-border-color: var(--pm-primary);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--pm-primary);
+  --bs-btn-border-color: var(--pm-primary);
+  --bs-btn-hover-bg: var(--pm-primary);
+  --bs-btn-hover-border-color: var(--pm-primary);
+  --bs-btn-active-bg: var(--pm-primary);
+  --bs-btn-active-border-color: var(--pm-primary);
+}
+
+.text-primary {
+  color: var(--pm-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--pm-primary) !important;
+}
+
+.bg-primary.bg-opacity-10 {
+  background-color: rgba(4, 92, 214, 0.08) !important;
+}
+
+a {
+  color: var(--pm-primary);
+}
+a:hover,
+a:focus {
+  color: var(--pm-primary-dark);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--pm-bg);
+  color: var(--pm-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.text-muted {
+  color: var(--pm-text-muted) !important;
+}
+
+.card,
+.table,
+.table-responsive,
+.modal-content,
+.form-control,
+.form-select,
+.input-group-text,
+.list-group-item {
+  background-color: var(--pm-surface);
+  color: var(--pm-text);
+  border-color: var(--pm-border);
+}
+
+.hero,
+.stat-card,
+.module-card,
+.login-card,
+.filter-bar,
+section.bg-white {
+  background-color: var(--pm-surface) !important;
+  color: var(--pm-text);
+  border-color: var(--pm-border);
+}
+
+section.bg-white .card,
+section.bg-white .card-body {
+  background-color: transparent;
+}
+
+.hero {
+  background-color: var(--pm-bg-soft);
+}
+
+.stat-card {
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+}
+
+.hero-dashboard {
+  background: linear-gradient(135deg, var(--pm-surface) 0%, var(--pm-bg-soft) 100%);
+  border: 1px solid var(--pm-border);
+}
+
+.pie-chart-wrapper {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+}
+
+.pie-chart {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--pm-success) 0deg 0deg,
+    var(--pm-warning) 0deg 0deg,
+    var(--pm-danger) 0deg 0deg
+  );
+  box-shadow: inset 0 0 0 12px var(--pm-surface);
+}
+
+.pie-chart-center {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: var(--pm-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--pm-border);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.module-card:hover,
+.module-card:focus-within {
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.22);
+}
+
+.table-turnos {
+  background-color: var(--pm-surface) !important;
+  color: var(--pm-text) !important;
+}
+
+.table-turnos thead th {
+  color: var(--pm-text) !important;
+  background-color: var(--pm-surface-alt) !important;
+  border-color: var(--pm-border) !important;
+}
+
+.table-turnos tbody td {
+  color: var(--pm-text) !important;
+  background-color: var(--pm-surface) !important;
+  border-color: var(--pm-border) !important;
+}
+
+.table-turnos tbody tr:hover td {
+  background-color: var(--pm-surface-alt) !important;
+}
+
+.table-responsive {
+  background-color: var(--pm-surface) !important;
+}
+
+.buscador-turnos {
+  background-color: var(--pm-surface) !important;
+}
+
+.buscador-turnos .input-group-text,
+.buscador-turnos .form-control,
+.buscador-turnos .form-select {
+  background-color: var(--pm-surface) !important;
+  color: var(--pm-text) !important;
+  border-color: var(--pm-border) !important;
+}
+
+.buscador-turnos .input-group-text {
+  color: var(--pm-text-muted) !important;
+}
+
+.form-control::placeholder,
+.form-select option {
+  color: var(--pm-text-muted);
+}
+
+#mensajeFechaTurno.form-text {
+  color: var(--pm-text-muted) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+body[data-theme="dark"] #mensajeFechaTurno.form-text {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#mensajeModalTurno.alert-danger,
+body[data-theme="dark"] #mensajeModalTurno.alert-danger,
+.modal-content #mensajeModalTurno.alert-danger,
+body[data-theme="dark"] .modal-content #mensajeModalTurno.alert-danger {
+  background-color: rgba(220, 53, 69, 0.18) !important;
+  color: #ffffff !important;
+  border-color: rgba(220, 53, 69, 0.55) !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 1px rgba(0,0,0,0.25);
+}
+
+#mensajeModalTurno.alert-danger .btn-close,
+body[data-theme="dark"] #mensajeModalTurno.alert-danger .btn-close,
+.modal-content #mensajeModalTurno.alert-danger .btn-close {
+  filter: brightness(1.6) !important;
+}
+
+body[data-theme="dark"] .navbar-toggler-icon,
+body[data-theme="dark"] .bi {
+  filter: none;
+  color: var(--pm-text);
+}
+
+body[data-theme="dark"] .input-group-text .bi,
+body[data-theme="dark"] .btn-theme-toggle .bi {
+  color: var(--pm-text);
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Foco visible para accesibilidad (navegación por teclado) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.nav-link:focus-visible {
+  outline: 3px solid var(--pm-accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   Navbar
+   --------------------------------------------------------- */
+.navbar {
+  background-color: var(--pm-navbar-bg) !important;
+  border-color: var(--pm-border) !important;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar .navbar-text-saludo {
+  color: var(--pm-text) !important;
+}
+
+.navbar .nav-link {
+  color: var(--pm-text-muted);
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: var(--pm-primary);
+}
+
+.navbar .nav-link.active {
+  font-weight: 600;
+  color: var(--pm-primary) !important;
+}
+
+.navbar-brand img {
+  margin-right: 0.5rem;
+}
+
+.logo-icon {
+  height: 34px;
+  width: auto;
+}
+
+/* Bootstrap's .nav-link sets "background: none" que, por orden de la hoja
+   de estilos, empata en especificidad con .btn-primary y deja el botón
+   "apagado" hasta :hover. Se resuelve dándole su propia clase, separada
+   de .nav-link, para que no herede ese comportamiento. */
+.btn-nav-login {
+  color: #fff;
+}
+.btn-nav-login:hover,
+.btn-nav-login:focus,
+.btn-nav-login:active {
+  color: #fff;
+}
+
+.navbar-text-saludo {
+  color: var(--pm-text-muted);
+  font-size: 0.9rem;
+}
+
+.btn-theme-toggle {
+  color: var(--pm-text);
+  border-color: var(--pm-border);
+  background-color: var(--pm-surface);
+}
+
+.btn-theme-toggle:hover,
+.btn-theme-toggle:focus {
+  background-color: var(--pm-bg-soft);
+  color: var(--pm-primary);
+  border-color: var(--pm-primary);
+}
+
+/* ---------------------------------------------------------
+   Hero
+   --------------------------------------------------------- */
+.hero {
+  background-color: var(--pm-bg-soft);
+  padding: 3rem 0;
+}
+
+.hero h1 {
+  font-weight: 700;
+}
+
+.hero img,
+.hero svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------------------------------------------------------
+   Dashboard (index.html)
+   --------------------------------------------------------- */
+.stat-card {
+  border: none;
+  border-left: 4px solid var(--pm-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0.25rem 0.75rem rgba(11, 36, 77, 0.06);
+}
+
+.stat-card.stat-confirmados {
+  border-left-color: var(--pm-success);
+}
+.stat-card.stat-pendientes {
+  border-left-color: var(--pm-warning);
+}
+.stat-card.stat-cancelados {
+  border-left-color: var(--pm-danger);
+}
+
+.stat-card .stat-numero {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Cards de módulos */
+.module-card {
+  height: 100%;
+  border: 1px solid #e9ecef;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.module-card:hover,
+.module-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1.5rem rgba(4, 92, 214, 0.12);
+}
+
+.module-card .icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--pm-bg-soft);
+  color: var(--pm-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+   Login
+   --------------------------------------------------------- */
+.login-card {
+  max-width: 420px;
+  margin: 3rem auto;
+}
+
+.password-toggle {
+  cursor: pointer;
+}
+
+.invalid-feedback {
+  font-weight: 500;
+}
+
+.form-text-error {
+  color: #b02a37;
+}
+
+/* ---------------------------------------------------------
+   Turnos
+   --------------------------------------------------------- */
+.filter-bar {
+  background-color: var(--pm-surface-alt);
+  border: 1px solid var(--pm-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Badges de turno (franja horaria) */
+.badge-turno-manana {
+  background-color: var(--pm-primary);
+}
+.badge-turno-tarde {
+  background-color: #146c43;
+}
+.badge-turno-noche {
+  background-color: #59359a;
+}
+
+/* Semáforo de estados (Confirmado / Pendiente / Cancelado) */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  padding: 0.4em 0.65em;
+}
+
+.badge-estado::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: currentColor;
+}
+
+.badge-estado-confirmado {
+  color: var(--pm-success);
+  background-color: var(--pm-success-bg);
+}
+.badge-estado-pendiente {
+  color: var(--pm-warning);
+  background-color: var(--pm-warning-bg);
+}
+.badge-estado-cancelado {
+  color: var(--pm-danger);
+  background-color: var(--pm-danger-bg);
+}
+
+/* Semáforo de asistencia (Presente / Tardanza / Ausente / Sin marcar) */
+.badge-asistencia-presente {
+  color: var(--pm-success);
+  background-color: var(--pm-success-bg);
+  border-color: var(--pm-success) !important;
+}
+.badge-asistencia-tardanza {
+  color: var(--pm-warning);
+  background-color: var(--pm-warning-bg);
+  border-color: var(--pm-warning) !important;
+}
+.badge-asistencia-ausente {
+  color: var(--pm-danger);
+  background-color: var(--pm-danger-bg);
+  border-color: var(--pm-danger) !important;
+}
+.badge-asistencia-sinmarcar {
+  color: var(--pm-text-muted);
+  background-color: var(--pm-surface-alt);
+  border-color: var(--pm-border) !important;
+}
+
+.badge-select-asistencia {
+  display: inline-block;
+  width: auto;
+  min-width: 140px;
+  font-weight: 600;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.table-turnos {
+  color: var(--pm-text);
+}
+
+.table-turnos th {
+  white-space: nowrap;
+  color: var(--pm-text-muted);
+  background-color: var(--pm-surface-alt);
+}
+
+.table-turnos td {
+  border-color: var(--pm-border);
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: var(--pm-surface-alt);
+}
+
+.acciones-turno {
+  white-space: nowrap;
+}
+
+.acciones-turno .form-select-sm {
+  display: inline-block;
+  width: auto;
+}
+
+.btn-eliminar-turno {
+  --bs-btn-color: var(--pm-danger);
+  --bs-btn-border-color: var(--pm-danger);
+  --bs-btn-hover-bg: var(--pm-danger);
+  --bs-btn-hover-border-color: var(--pm-danger);
+}
+
+.buscador-turnos {
+  max-width: 320px;
+}
+
+.modal-content,
+.form-control,
+.form-select,
+.input-group-text {
+  background-color: var(--pm-surface);
+  color: var(--pm-text);
+  border-color: var(--pm-border);
+}
+
+.form-control::placeholder,
+.form-select option {
+  color: var(--pm-text-muted);
+}
+
+footer {
+  background-color: var(--pm-footer-bg);
+  color: #f8f9fa;
+}
+
+footer a {
+  color: #c9d6ec;
+}
+
+footer a:hover,
+footer a:focus {
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+  .hero {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  .hero .hero-image {
+    margin-top: 1.5rem;
+  }
+  .login-card {
+    margin: 1.5rem auto;
+  }
+  .buscador-turnos {
+    max-width: 100%;
+  }
+}

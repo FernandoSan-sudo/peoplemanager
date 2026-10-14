@@ -1,0 +1,14 @@
+{
+  "name": "peoplemanager-web-funcional-api",
+  "version": "1.0.0",
+  "description": "API REST del proyecto PeopleManager contra el esquema pm (usuarios, turnos, asistencia, solicitudes)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "pg": "^8.11.5"
+  }
+}
