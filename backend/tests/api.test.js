@@ -26,7 +26,7 @@ const enviarJson = (ruta, cuerpo) =>
   fetch(base + ruta, { method: "POST", headers: { "Content-Type": "application/json" }, body: cuerpo });
 
 test("las rutas protegidas exigen iniciar sesión (401)", async () => {
-  for (const ruta of ["/api/usuarios", "/api/turnos", "/api/solicitudes", "/api/catalogos/areas", "/api/reportes/resumen", "/api/auditoria"]) {
+  for (const ruta of ["/api/usuarios", "/api/turnos", "/api/solicitudes", "/api/catalogos/areas", "/api/reportes/resumen", "/api/auditoria", "/api/nomina"]) {
     const respuesta = await fetch(base + ruta);
     assert.equal(respuesta.status, 401, ruta);
   }
