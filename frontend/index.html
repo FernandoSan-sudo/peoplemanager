@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeopleManager | Inicio</title>
-  <meta name="description" content="PeopleManager, sistema de gestión de talento humano: turnos, asistencia, solicitudes y nómina." />
+  <meta name="description" content="PeopleManager, sistema de gestión de talento humano: turnos, asistencia, solicitudes y reportes." />
   <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/favicon-64.png" />
@@ -19,7 +19,7 @@
   <a class="visually-hidden-focusable btn btn-primary position-absolute m-2" href="#contenidoPrincipal">Saltar al contenido principal</a>
 
   <!-- ===================== NAVBAR ===================== -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
         <img src="img/logo-icon.png" alt="Logo de PeopleManager" class="logo-icon">
@@ -30,29 +30,24 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarPrincipal">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+        <ul class="navbar-nav ms-auto mb-2 mb-xl-0 align-items-xl-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
+          <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <!-- Visibles solo para los roles indicados (js/script.js) -->
+          <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
+          <li class="nav-item d-none ms-xl-2" id="navSaludoItem">
+            <button type="button" class="btn btn-link navbar-text-saludo" id="saludoUsuario"></button>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="turnos.html" data-protected-link="turnos">Turnos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="asistencia.html" data-protected-link="asistencia">Asistencia</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="solicitudes.html" data-protected-link="solicitudes">Solicitudes</a>
-          </li>
-          <li class="nav-item d-none" id="navSaludoItem">
-            <span class="navbar-text-saludo" id="saludoUsuario"></span>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-lg-2" id="themeToggle" aria-pressed="false">
-              <i class="bi bi-moon-fill"></i> Oscuro
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-xl-2" id="themeToggle" aria-pressed="false">
+              <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="texto-tema"> Oscuro</span>
             </button>
           </li>
           <li class="nav-item">
-            <a class="btn btn-primary btn-nav-login px-3 ms-lg-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
+            <a class="btn btn-primary btn-nav-login px-3 ms-xl-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
           </li>
         </ul>
       </div>
@@ -65,65 +60,77 @@
       <div class="container">
         <div class="row align-items-center g-4">
           <div class="col-lg-6">
-            <h1 class="display-5">Gestiona el talento humano de tu empresa en un solo lugar</h1>
-            <p class="lead text-muted">
-              PeopleManager centraliza el control de asistencia, la planificación de turnos, las
-              solicitudes del personal y el cálculo de nómina, para que tu equipo de talento humano
-              trabaje de forma organizada y eficiente.
-            </p>
-            <div class="d-flex flex-wrap gap-2">
-              <a href="login.html" class="btn btn-primary btn-lg" id="btnHeroLogin">Iniciar sesión</a>
-              <a href="turnos.html" class="btn btn-outline-primary btn-lg" data-protected-link="turnos">Ver turnos</a>
+            <!-- Visitante sin sesión -->
+            <div data-sin-sesion>
+              <h1 class="display-5">Gestiona el talento humano de tu empresa en un solo lugar</h1>
+              <p class="lead text-muted">
+                PeopleManager centraliza la planificación de turnos, el control de asistencia y las
+                solicitudes del personal (permisos, vacaciones e incapacidades) y la nómina, con reportes para que
+                tu equipo de talento humano trabaje de forma organizada y eficiente.
+              </p>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="login.html" class="btn btn-primary btn-lg">Iniciar sesión</a>
+                <a href="turnos.html" class="btn btn-outline-primary btn-lg" data-protected-link>Ver turnos</a>
+              </div>
             </div>
-            <div id="alertaTurnosNoAuth" class="alert alert-warning mt-3 d-none" role="alert">
-              Debes iniciar sesión para ver la pantalla de turnos.
+            <!-- Usuario con sesión -->
+            <div class="d-none" data-requiere-sesion>
+              <p class="text-uppercase small fw-semibold text-primary mb-2">Panel principal</p>
+              <h1 class="display-6" id="tituloBienvenida">Hola</h1>
+              <p class="lead text-muted" id="subtituloBienvenida"></p>
+              <div class="d-flex flex-wrap gap-2" id="accesosRapidos"></div>
+              <div id="alertaCuentasBloqueadas" class="alert alert-warning mt-3 d-none" role="status">
+                <i class="bi bi-lock-fill me-1" aria-hidden="true"></i>
+                Hay <strong id="statCuentasBloqueadas">0</strong> cuenta(s) bloqueada(s) por intentos fallidos.
+                <a href="usuarios.html" class="alert-link">Revisar usuarios</a>
+              </div>
             </div>
           </div>
+
           <div class="col-lg-6 hero-image">
-            <div class="hero-dashboard p-4 rounded-4 shadow-sm">
+            <div class="hero-dashboard p-4 rounded-4 shadow-sm" id="panelResumen">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                  <p class="mb-1 fw-semibold">Turnos actuales</p>
+                  <p class="mb-1 fw-semibold">Turnos de hoy</p>
                   <h2 class="h4 mb-0">Resumen del día</h2>
                 </div>
-                <span class="badge bg-primary-subtle text-primary">En vivo</span>
+                <span class="badge bg-primary-subtle text-primary d-none" data-requiere-sesion>
+                  <i class="bi bi-broadcast" aria-hidden="true"></i> En vivo
+                </span>
               </div>
 
-              <div class="row align-items-center g-3">
-                <div class="col-12 col-md-6 text-center">
-                  <div class="pie-chart-wrapper">
-                    <div class="pie-chart" id="heroPieChart"></div>
-                    <div class="pie-chart-center">
-                      <span class="small text-muted">Total</span>
-                      <strong id="heroTotalTurnos">0</strong>
+              <div data-sin-sesion>
+                <img src="img/hero-turnos.svg" alt="" class="img-fluid mb-3" aria-hidden="true">
+                <p class="text-muted mb-0">Inicia sesión para ver en tiempo real quién está en turno, quién llegó tarde y qué solicitudes esperan respuesta.</p>
+              </div>
+
+              <div class="d-none" data-requiere-sesion>
+                <div class="row align-items-center g-3">
+                  <div class="col-12 col-md-6 text-center">
+                    <div class="pie-chart-wrapper">
+                      <div class="pie-chart" id="heroPieChart" role="img" aria-label="Distribución de turnos de hoy"></div>
+                      <div class="pie-chart-center">
+                        <span class="small text-muted">Total</span>
+                        <strong id="heroTotalTurnos">0</strong>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="col-12 col-md-6">
-                  <div class="d-flex align-items-center gap-2 mb-2">
-                    <span class="legend-dot bg-success"></span>
-                    <span class="small">Completados</span>
-                    <strong class="ms-auto" id="heroConfirmados">0</strong>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mb-2">
-                    <span class="legend-dot bg-warning"></span>
-                    <span class="small">Pendientes</span>
-                    <strong class="ms-auto" id="heroPendientes">0</strong>
-                  </div>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="legend-dot bg-danger"></span>
-                    <span class="small">Tardanzas</span>
-                    <strong class="ms-auto" id="heroCancelados">0</strong>
+                  <div class="col-12 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-2"><span class="legend-dot" style="background: var(--pm-success);"></span><span class="small">Presentes</span><strong class="ms-auto" id="heroPresentes">0</strong></div>
+                    <div class="d-flex align-items-center gap-2 mb-2"><span class="legend-dot" style="background: var(--pm-warning);"></span><span class="small">Tardanza / salida anticipada</span><strong class="ms-auto" id="heroNovedades">0</strong></div>
+                    <div class="d-flex align-items-center gap-2 mb-2"><span class="legend-dot" style="background: var(--pm-danger);"></span><span class="small">Ausentes</span><strong class="ms-auto" id="heroAusentes">0</strong></div>
+                    <div class="d-flex align-items-center gap-2 mb-2"><span class="legend-dot" style="background: var(--pm-info);"></span><span class="small">Justificados</span><strong class="ms-auto" id="heroJustificados">0</strong></div>
+                    <div class="d-flex align-items-center gap-2"><span class="legend-dot" style="background: var(--pm-neutral);"></span><span class="small">Sin marcar</span><strong class="ms-auto" id="heroPendientes">0</strong></div>
                   </div>
                 </div>
-              </div>
 
-              <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
-                <div>
-                  <p class="small text-muted mb-1">Distribución de turnos</p>
-                  <h3 class="h5 mb-0">Según el estado actual</h3>
+                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                  <div>
+                    <p class="small text-muted mb-1"><span id="ultimaActualizacion">Cargando...</span></p>
+                    <h3 class="h6 mb-0"><i class="bi bi-person-workspace me-1" aria-hidden="true"></i>En turno ahora: <span id="heroEnTurno">0</span></h3>
+                  </div>
+                  <a href="asistencia.html" class="btn btn-sm btn-outline-primary">Ver asistencia</a>
                 </div>
-                <a href="turnos.html" class="btn btn-sm btn-outline-primary" data-protected-link="turnos">Ver detalle</a>
               </div>
             </div>
           </div>
@@ -131,42 +138,69 @@
       </div>
     </section>
 
-    <!-- ===================== DASHBOARD DE TURNOS ===================== -->
-    <section class="py-5 bg-white">
+    <!-- ===================== INDICADORES (con sesión) ===================== -->
+    <section class="py-5 bg-white d-none" data-requiere-sesion>
       <div class="container">
-        <h2 class="text-center mb-2">Estado actual de los turnos</h2>
-        <p class="text-center text-muted mb-5">Resumen en vivo, calculado a partir de los datos reales del sistema.</p>
+        <h2 class="text-center mb-2">Indicadores</h2>
+        <p class="text-center text-muted mb-5">Calculados en vivo a partir de los turnos, la asistencia y las solicitudes registradas.</p>
 
         <div class="row g-4">
-          <div class="col-sm-3">
-            <div class="card stat-card stat-confirmados p-3">
+          <div class="col-6 col-lg-3">
+            <div class="card stat-card stat-confirmados p-3 h-100">
               <div class="card-body">
-                <p class="text-muted mb-1">Completados</p>
-                <p class="stat-numero text-success mb-0" id="statConfirmados">0</p>
+                <p class="text-muted mb-1">Presentes hoy</p>
+                <p class="stat-numero text-success mb-0" id="statPresentes">0</p>
               </div>
             </div>
           </div>
-          <div class="col-sm-3">
-            <div class="card stat-card stat-pendientes p-3">
+          <div class="col-6 col-lg-3">
+            <div class="card stat-card stat-pendientes p-3 h-100">
               <div class="card-body">
-                <p class="text-muted mb-1">Pendientes</p>
+                <p class="text-muted mb-1">Sin marcar hoy</p>
                 <p class="stat-numero mb-0" style="color: var(--pm-warning);" id="statPendientes">0</p>
               </div>
             </div>
           </div>
-          <div class="col-sm-3">
-            <div class="card stat-card stat-cancelados p-3">
+          <div class="col-6 col-lg-3">
+            <div class="card stat-card stat-pendientes p-3 h-100">
               <div class="card-body">
-                <p class="text-muted mb-1">Tardanzas</p>
-                <p class="stat-numero text-danger mb-0" id="statCancelados">0</p>
+                <p class="text-muted mb-1">Tardanzas hoy</p>
+                <p class="stat-numero text-warning-emphasis mb-0" id="statNovedades">0</p>
               </div>
             </div>
           </div>
-          <div class="col-sm-3">
-            <div class="card stat-card p-3">
+          <div class="col-6 col-lg-3">
+            <div class="card stat-card stat-cancelados p-3 h-100">
+              <div class="card-body">
+                <p class="text-muted mb-1">Ausentes hoy</p>
+                <p class="stat-numero text-danger mb-0" id="statAusentes">0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row g-4 mt-1">
+          <div class="col-md-4">
+            <a href="solicitudes.html" class="card stat-card p-3 h-100 text-decoration-none">
               <div class="card-body">
                 <p class="text-muted mb-1">Solicitudes pendientes</p>
-                <p class="stat-numero mb-0 text-primary" id="statSolicitudesPendientes">0</p>
+                <p class="stat-numero text-primary mb-0" id="statSolicitudesPendientes">0</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <div class="card stat-card p-3 h-100">
+              <div class="card-body">
+                <p class="text-muted mb-1">Tardanzas en el mes</p>
+                <p class="stat-numero mb-0" id="statTardanzasMes">0</p>
+                <p class="small text-muted mb-0">Acumulado: <span id="statMinutosTardanzaMes">0 min</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-solo-gestor>
+            <div class="card stat-card p-3 h-100">
+              <div class="card-body">
+                <p class="text-muted mb-1">Empleados activos</p>
+                <p class="stat-numero mb-0" id="statEmpleadosActivos">0</p>
               </div>
             </div>
           </div>
@@ -181,42 +215,53 @@
         <p class="text-center text-muted mb-5">Todo lo que tu equipo de talento humano necesita en una sola plataforma</p>
 
         <div class="row g-4">
-          <div class="col-sm-6 col-lg-3">
-            <div class="card module-card shadow-sm p-3">
-              <div class="card-body text-center">
-                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-clock-history"></i></div>
-                <h3 class="h5 card-title">Asistencia</h3>
-                <p class="card-text text-muted">Control de entradas, salidas y tardanzas del personal en tiempo real.</p>
-                <a href="asistencia.html" class="stretched-link small" data-protected-link="asistencia">Ver módulo de asistencia</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card module-card shadow-sm p-3">
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
               <div class="card-body text-center">
                 <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-calendar-week"></i></div>
                 <h3 class="h5 card-title">Turnos</h3>
-                <p class="card-text text-muted">Planificación y asignación de turnos por área y empleado.</p>
-                <a href="turnos.html" class="stretched-link small" data-protected-link="turnos">Ver módulo de turnos</a>
+                <p class="card-text text-muted">Asignación por día o por semanas completas, con control de cruces de horario y vacaciones.</p>
+                <a href="turnos.html" class="stretched-link small" data-protected-link>Ver módulo de turnos</a>
               </div>
             </div>
           </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card module-card shadow-sm p-3">
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
+              <div class="card-body text-center">
+                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-clock-history"></i></div>
+                <h3 class="h5 card-title">Asistencia</h3>
+                <p class="card-text text-muted">Registro de entrada y salida con cálculo automático de tardanzas, ausencias y salidas anticipadas.</p>
+                <a href="asistencia.html" class="stretched-link small" data-protected-link>Ver módulo de asistencia</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
               <div class="card-body text-center">
                 <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-clipboard-check"></i></div>
                 <h3 class="h5 card-title">Solicitudes</h3>
-                <p class="card-text text-muted">Gestión de permisos, vacaciones y novedades del personal.</p>
-                <a href="solicitudes.html" class="stretched-link small" data-protected-link="solicitudes">Ver módulo de solicitudes</a>
+                <p class="card-text text-muted">Permisos, vacaciones e incapacidades con flujo de aprobación y respuesta al empleado.</p>
+                <a href="solicitudes.html" class="stretched-link small" data-protected-link>Ver módulo de solicitudes</a>
               </div>
             </div>
           </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card module-card shadow-sm p-3">
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
               <div class="card-body text-center">
-                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-cash-coin"></i></div>
-                <h3 class="h5 card-title">Nómina</h3>
-                <p class="card-text text-muted">Cálculo automático de pagos según turnos y asistencia registrada.</p>
+                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-people"></i></div>
+                <h3 class="h5 card-title">Usuarios</h3>
+                <p class="card-text text-muted">Altas, roles, desactivación lógica, desbloqueo de cuentas y restablecimiento de contraseñas.</p>
+                <a href="usuarios.html" class="stretched-link small" data-protected-link>Ver módulo de usuarios</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
+              <div class="card-body text-center">
+                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></div>
+                <h3 class="h5 card-title">Reportes</h3>
+                <p class="card-text text-muted">Consolidado de asistencia por empleado, horas trabajadas y bitácora de auditoría, exportables a Excel.</p>
+                <a href="reportes.html" class="stretched-link small" data-protected-link>Ver reportes</a>
               </div>
             </div>
           </div>
@@ -225,7 +270,7 @@
     </section>
 
     <!-- ===================== CTA ===================== -->
-    <section class="bg-primary bg-opacity-10 py-5">
+    <section class="bg-primary bg-opacity-10 py-5" data-sin-sesion>
       <div class="container text-center">
         <h2 class="mb-3">¿Listo para organizar los turnos de tu equipo?</h2>
         <a href="login.html" class="btn btn-primary btn-lg">Comenzar ahora</a>
@@ -239,10 +284,10 @@
       <span>&copy; 2026 PeopleManager. Proyecto formativo SENA.</span>
       <nav aria-label="Enlaces del pie de página">
         <a href="index.html" class="me-3">Inicio</a>
-        <a href="turnos.html" class="me-3" data-protected-link="turnos">Turnos</a>
-        <a href="asistencia.html" class="me-3" data-protected-link="asistencia">Asistencia</a>
-        <a href="solicitudes.html" class="me-3" data-protected-link="solicitudes">Solicitudes</a>
-        <a href="login.html">Iniciar sesión</a>
+        <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
+        <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
+        <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
   </footer>
@@ -254,6 +299,8 @@
   <script src="js/services/TurnoService.js"></script>
   <script src="js/services/AsistenciaService.js"></script>
   <script src="js/services/SolicitudService.js"></script>
+  <script src="js/services/ReporteService.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/paginas/dashboard.js"></script>
 </body>
 </html>

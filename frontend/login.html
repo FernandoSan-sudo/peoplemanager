@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeopleManager | Iniciar sesión</title>
-  <meta name="description" content="Inicia sesión en PeopleManager para gestionar turnos, asistencia y solicitudes del personal." />
+  <meta name="description" content="Inicia sesión en PeopleManager para gestionar turnos, asistencia y solicitudes." />
   <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/favicon-64.png" />
@@ -19,7 +19,7 @@
   <a class="visually-hidden-focusable btn btn-primary position-absolute m-2" href="#contenidoPrincipal">Saltar al contenido principal</a>
 
   <!-- ===================== NAVBAR ===================== -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
         <img src="img/logo-icon.png" alt="Logo de PeopleManager" class="logo-icon">
@@ -30,29 +30,24 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarPrincipal">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+        <ul class="navbar-nav ms-auto mb-2 mb-xl-0 align-items-xl-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
+          <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <!-- Visibles solo para los roles indicados (js/script.js) -->
+          <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
+          <li class="nav-item d-none ms-xl-2" id="navSaludoItem">
+            <button type="button" class="btn btn-link navbar-text-saludo" id="saludoUsuario"></button>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="turnos.html">Turnos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="asistencia.html">Asistencia</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="solicitudes.html">Solicitudes</a>
-          </li>
-          <li class="nav-item d-none" id="navSaludoItem">
-            <span class="navbar-text-saludo" id="saludoUsuario"></span>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-lg-2" id="themeToggle" aria-pressed="false">
-              <i class="bi bi-moon-fill"></i> Oscuro
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-xl-2" id="themeToggle" aria-pressed="false">
+              <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="texto-tema"> Oscuro</span>
             </button>
           </li>
           <li class="nav-item">
-            <a class="btn btn-primary btn-nav-login px-3 ms-lg-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
+            <a class="btn btn-primary btn-nav-login px-3 ms-xl-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
           </li>
         </ul>
       </div>
@@ -69,52 +64,25 @@
           <h1 class="h3 text-center mb-1">Iniciar sesión</h1>
           <p class="text-muted text-center mb-4">Ingresa tus credenciales para acceder a PeopleManager</p>
 
-          <div id="loginExito" class="alert alert-success d-none" role="alert">
-            Credenciales válidas. Redirigiendo al módulo de turnos...
-          </div>
-
-          <div id="loginError" class="alert alert-danger d-none" role="alert">
-            Correo o contraseña incorrectos. Verifica tus datos e intenta nuevamente.
-          </div>
+          <div id="loginInfo" class="alert alert-info d-none" role="status"></div>
+          <div id="loginExito" class="alert alert-success d-none" role="status" tabindex="-1"></div>
+          <div id="loginError" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
 
           <form id="formLogin" novalidate>
             <div class="mb-3">
               <label for="email" class="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                class="form-control"
-                id="email"
-                name="email"
-                placeholder="usuario@empresa.com"
-                autocomplete="username"
-                aria-describedby="emailFeedback"
-                required
-              />
-              <div id="emailFeedback" class="invalid-feedback">
-                Ingrese un correo electrónico válido.
-              </div>
+              <input type="email" class="form-control" id="email" name="email" placeholder="usuario@empresa.com"
+                autocomplete="username" aria-describedby="emailFeedback" required />
+              <div id="emailFeedback" class="invalid-feedback">Ingrese un correo electrónico válido.</div>
             </div>
 
             <div class="mb-3">
               <label for="password" class="form-label">Contraseña</label>
               <div class="input-group has-validation">
-                <input
-                  type="password"
-                  class="form-control"
-                  id="password"
-                  name="password"
-                  placeholder="Mínimo 6 caracteres"
-                  autocomplete="current-password"
-                  aria-describedby="passwordFeedback"
-                  required
-                  minlength="6"
-                />
-                <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword" aria-pressed="false">
-                  Mostrar
-                </button>
-                <div id="passwordFeedback" class="invalid-feedback">
-                  La contraseña debe tener mínimo 6 caracteres.
-                </div>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Tu contraseña"
+                  autocomplete="current-password" aria-describedby="passwordFeedback" required />
+                <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword" aria-pressed="false">Mostrar</button>
+                <div id="passwordFeedback" class="invalid-feedback">La contraseña es obligatoria.</div>
               </div>
             </div>
 
@@ -127,10 +95,10 @@
           </form>
 
           <p class="text-center text-muted small mt-4 mb-1">
-            ¿Aún no tienes una cuenta? Comunícate con el administrador del sistema.
+            ¿Aún no tienes una cuenta u olvidaste tu contraseña? Comunícate con el administrador del sistema.
           </p>
           <p class="text-center text-muted small mb-0">
-            Usuario de prueba: <strong>admin@peoplemanager.com</strong> / <strong>admin123</strong>
+            <i class="bi bi-shield-lock" aria-hidden="true"></i> Por seguridad, la cuenta se bloquea tras 5 intentos fallidos.
           </p>
         </div>
       </div>
@@ -143,10 +111,10 @@
       <span>&copy; 2026 PeopleManager. Proyecto formativo SENA.</span>
       <nav aria-label="Enlaces del pie de página">
         <a href="index.html" class="me-3">Inicio</a>
-        <a href="turnos.html" class="me-3">Turnos</a>
-        <a href="asistencia.html" class="me-3">Asistencia</a>
-        <a href="solicitudes.html" class="me-3">Solicitudes</a>
-        <a href="login.html">Iniciar sesión</a>
+        <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
+        <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
+        <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
   </footer>
@@ -158,6 +126,8 @@
   <script src="js/services/TurnoService.js"></script>
   <script src="js/services/AsistenciaService.js"></script>
   <script src="js/services/SolicitudService.js"></script>
+  <script src="js/services/ReporteService.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/paginas/login.js"></script>
 </body>
 </html>
