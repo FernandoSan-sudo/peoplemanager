@@ -5,7 +5,8 @@
 -- Este script es AUTOSUFICIENTE: crea el esquema "pm" y todas
 -- las tablas que necesita la API (roles, areas, cargos,
 -- usuarios, turnos, asistencia, tipos_solicitud, solicitudes,
--- nomina, auditoria) usando "IF NOT EXISTS", y luego siembra
+-- nomina, auditoria, activos, activos_asignados,
+-- asset_transfer_logs) usando "IF NOT EXISTS", y luego siembra
 -- los datos base.
 --
 -- Por eso se puede ejecutar en DOS escenarios sin ningún
@@ -168,6 +169,29 @@ CREATE TABLE IF NOT EXISTS auditoria (
     fecha_accion    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Activos (productos de la empresa) entregados al personal.
+CREATE TABLE IF NOT EXISTS activos (
+    id_activo     SERIAL PRIMARY KEY,
+    nombre_activo VARCHAR(100),
+    serial        VARCHAR(100) UNIQUE,
+    id_area       INT REFERENCES areas(id_area)
+);
+
+CREATE TABLE IF NOT EXISTS activos_asignados (
+    id_asignacion    SERIAL PRIMARY KEY,
+    id_activo        INT REFERENCES activos(id_activo),
+    id_usuario       INT REFERENCES usuarios(id_usuario),
+    fecha_asignacion DATE
+);
+
+CREATE TABLE IF NOT EXISTS asset_transfer_logs (
+    id_transferencia    SERIAL PRIMARY KEY,
+    id_activo           INT REFERENCES activos(id_activo),
+    id_area_origen      INT REFERENCES areas(id_area),
+    id_area_destino     INT REFERENCES areas(id_area),
+    fecha_transferencia TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ---------------------------------------------------------
 -- 3) Índices
 -- ---------------------------------------------------------
@@ -195,6 +219,16 @@ INSERT INTO areas (nombre_area, descripcion) VALUES
   ('Logística', 'Operaciones logísticas y distribución'),
   ('Producción', 'Procesos de producción y planta')
 ON CONFLICT (nombre_area) DO NOTHING;
+
+-- Activos de ejemplo: solo si la tabla está vacía (no toca un inventario existente).
+INSERT INTO activos (nombre_activo, serial, id_area)
+SELECT v.nombre, v.serial, (SELECT id_area FROM areas ORDER BY id_area LIMIT 1)
+FROM (VALUES
+  ('Portátil Lenovo ThinkPad', 'LNV-TP-0001'),
+  ('Diadema Jabra', 'JBR-0001'),
+  ('Impresora Epson', 'EPS-0001')
+) AS v(nombre, serial)
+WHERE NOT EXISTS (SELECT 1 FROM activos);
 
 INSERT INTO tipos_solicitud (nombre_tipo) VALUES
   ('Permiso'),
