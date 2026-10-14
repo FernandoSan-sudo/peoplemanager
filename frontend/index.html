@@ -36,6 +36,7 @@
           <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
           <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
           <li class="nav-item"><a class="nav-link" href="nomina.html" data-protected-link>Nómina</a></li>
+          <li class="nav-item"><a class="nav-link" href="activos.html" data-protected-link>Activos</a></li>
           <!-- Visibles solo para los roles indicados (js/script.js) -->
           <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
           <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
@@ -249,6 +250,16 @@
           <div class="col-sm-6 col-lg-4">
             <div class="card module-card shadow-sm p-3 h-100">
               <div class="card-body text-center">
+                <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-laptop"></i></div>
+                <h3 class="h5 card-title">Activos</h3>
+                <p class="card-text text-muted">Inventario de equipos de la empresa: registro, entrega al personal, devoluciones y traslados entre áreas.</p>
+                <a href="activos.html" class="stretched-link small" data-protected-link>Ver módulo de activos</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-4">
+            <div class="card module-card shadow-sm p-3 h-100">
+              <div class="card-body text-center">
                 <div class="icon-circle mx-auto mb-3" aria-hidden="true"><i class="bi bi-people"></i></div>
                 <h3 class="h5 card-title">Usuarios</h3>
                 <p class="card-text text-muted">Altas, roles, desactivación lógica, desbloqueo de cuentas y restablecimiento de contraseñas.</p>
@@ -299,6 +310,7 @@
         <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
         <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
         <a href="nomina.html" class="me-3" data-protected-link>Nómina</a>
+        <a href="activos.html" class="me-3" data-protected-link>Activos</a>
         <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
@@ -313,6 +325,7 @@
   <script src="js/services/SolicitudService.js"></script>
   <script src="js/services/ReporteService.js"></script>
   <script src="js/services/NominaService.js"></script>
+  <script src="js/services/ActivoService.js"></script>
   <script src="js/script.js"></script>
   <script src="js/paginas/dashboard.js"></script>
 </body>
