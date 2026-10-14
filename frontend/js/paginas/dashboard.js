@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
     { texto: "Asignar turnos", href: "turnos.html", icono: "bi-calendar-plus", visible: tieneRol(sesion, ROLES_PLANIFICAN_TURNOS) },
     { texto: esDeGestion ? "Revisar solicitudes" : "Nueva solicitud", href: "solicitudes.html", icono: "bi-clipboard-check", visible: true },
     { texto: "Gestionar usuarios", href: "usuarios.html", icono: "bi-people", visible: tieneRol(sesion, ROLES_ADMINISTRAN_USUARIOS) },
+    { texto: tieneRol(sesion, ROLES_ADMINISTRAN_USUARIOS) ? "Liquidar nómina" : "Mis desprendibles", href: "nomina.html", icono: "bi-cash-coin", visible: true },
     { texto: "Ver reportes", href: "reportes.html", icono: "bi-bar-chart-line", visible: esDeGestion },
   ];
   const contenedorAccesos = $("accesosRapidos");
