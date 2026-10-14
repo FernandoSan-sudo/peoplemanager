@@ -1,8 +1,9 @@
 /* =========================================================
    UsuarioService.js
    -----------------------------------------------------------
-   Operaciones sobre /api/usuarios: login y CRUD. Usa la
-   instancia compartida de ApiService (ver ApiService.js).
+   Operaciones sobre /api/usuarios: login, CRUD, desbloqueo y
+   cambio de contraseña. Usa la instancia compartida de
+   ApiService (ver ApiService.js).
    ========================================================= */
 
 class UsuarioService {
@@ -14,8 +15,13 @@ class UsuarioService {
     return this.api.post("/usuarios/login", { correo, password });
   }
 
-  obtenerTodos() {
-    return this.api.get("/usuarios");
+  obtenerPerfil() {
+    return this.api.get("/usuarios/perfil");
+  }
+
+  /** @param {{ estado? }} filtros */
+  obtenerTodos(filtros = {}) {
+    return this.api.get(`/usuarios${ApiService.construirQuery(filtros)}`);
   }
 
   obtenerPorId(id) {
@@ -30,8 +36,18 @@ class UsuarioService {
     return this.api.put(`/usuarios/${id}`, datosUsuario);
   }
 
+  /** Eliminación lógica: el usuario queda "inactivo". */
   eliminar(id) {
     return this.api.delete(`/usuarios/${id}`);
+  }
+
+  desbloquear(id) {
+    return this.api.put(`/usuarios/${id}/desbloquear`);
+  }
+
+  /** passwordActual solo es obligatoria cuando el usuario cambia su propia contraseña. */
+  cambiarPassword(id, passwordNueva, passwordActual) {
+    return this.api.put(`/usuarios/${id}/password`, { password_nueva: passwordNueva, password_actual: passwordActual });
   }
 }
 

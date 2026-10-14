@@ -35,6 +35,9 @@
   --pm-warning-bg: #fdf3e2;
   --pm-danger: #dc3545;
   --pm-danger-bg: #fbe9eb;
+  --pm-info: #0b7285;
+  --pm-info-bg: #e3f4f7;
+  --pm-neutral: #ced4da;
 }
 
 body[data-theme="dark"] {
@@ -54,6 +57,9 @@ body[data-theme="dark"] {
   --pm-success-bg: #0f3d2e;
   --pm-warning-bg: #4a2f0f;
   --pm-danger-bg: #4b1d24;
+  --pm-info: #66d9e8;
+  --pm-info-bg: #0c3b44;
+  --pm-neutral: #475569;
   color-scheme: dark;
 }
 
@@ -636,5 +642,161 @@ footer a:focus {
   }
   .buscador-turnos {
     max-width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------
+   Ampliación: roles, asistencia en vivo, usuarios y reportes
+   --------------------------------------------------------- */
+
+/* Estado "Justificado": turno cubierto por una solicitud aprobada */
+.badge-asistencia-justificado {
+  color: var(--pm-info);
+  background-color: var(--pm-info-bg);
+  border-color: var(--pm-info) !important;
+}
+
+.stat-card.stat-justificados {
+  border-left-color: var(--pm-info);
+}
+
+/* Saludo del menú: botón que abre "Cambiar mi contraseña" */
+.navbar-text-saludo {
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-text-saludo,
+.btn-theme-toggle,
+.btn-nav-login,
+.navbar .nav-link {
+  white-space: nowrap;
+}
+
+/* Escritorio: menú horizontal compacto (ícono de tema sin texto). */
+@media (min-width: 1200px) {
+  .btn-theme-toggle .texto-tema {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1499.98px) {
+  .navbar .nav-link {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  .navbar-text-saludo .badge-rol {
+    display: none;
+  }
+}
+.navbar-text-saludo:hover,
+.navbar-text-saludo:focus {
+  color: var(--pm-primary);
+}
+
+.badge-rol {
+  background-color: var(--pm-bg-soft);
+  color: var(--pm-primary);
+  border: 1px solid var(--pm-primary);
+  font-weight: 600;
+}
+
+/* Reloj y panel "Mi turno de hoy" (asistencia.html) */
+.reloj-hora {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--pm-primary);
+  line-height: 1.1;
+}
+
+.panel-mi-turno {
+  border-left: 4px solid var(--pm-primary);
+}
+
+.mi-turno {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pm-border);
+  border-radius: 0.5rem;
+  background-color: var(--pm-surface-alt);
+}
+
+/* Filas destacadas en las tablas */
+.table-turnos tr.fila-hoy > td {
+  background-color: var(--pm-bg-soft);
+}
+
+.table-turnos tr.fila-inactiva > td {
+  opacity: 0.6;
+}
+
+.celda-motivo {
+  min-width: 180px;
+  max-width: 280px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Reportes */
+.barra-cumplimiento {
+  height: 0.6rem;
+  min-width: 80px;
+}
+
+.module-card-proximo {
+  opacity: 0.75;
+}
+
+a.stat-card:hover,
+a.stat-card:focus {
+  box-shadow: 0 0.5rem 1rem rgba(11, 36, 77, 0.12);
+}
+
+/* Modo oscuro para elementos de Bootstrap que usan colores fijos */
+body[data-theme="dark"] .table-light,
+body[data-theme="dark"] .table-light th {
+  --bs-table-bg: var(--pm-surface-alt);
+  --bs-table-color: var(--pm-text-muted);
+}
+
+body[data-theme="dark"] .table {
+  --bs-table-bg: var(--pm-surface);
+  --bs-table-color: var(--pm-text);
+  --bs-table-hover-bg: var(--pm-surface-alt);
+  --bs-table-hover-color: var(--pm-text);
+}
+
+body[data-theme="dark"] .text-bg-light {
+  background-color: var(--pm-surface-alt) !important;
+  color: var(--pm-text) !important;
+}
+
+@media (max-width: 767.98px) {
+  .reloj {
+    text-align: left !important;
+  }
+  .acciones-turno {
+    white-space: normal;
+  }
+}
+
+/* Impresión del desprendible de nómina: solo se imprime el contenido del modal */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #zonaImpresion,
+  #zonaImpresion * {
+    visibility: visible;
+  }
+  #zonaImpresion {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    color: #000;
+    background: #fff;
+  }
+  .modal-dialog-scrollable .modal-body {
+    overflow: visible !important;
   }
 }

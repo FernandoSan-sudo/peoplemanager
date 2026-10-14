@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeopleManager | Solicitudes</title>
-  <meta name="description" content="Crea y gestiona solicitudes de permiso, vacaciones e incapacidad en PeopleManager." />
+  <meta name="description" content="Crea y gestiona solicitudes de permisos, vacaciones e incapacidades." />
   <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/favicon-64.png" />
@@ -19,7 +19,7 @@
   <a class="visually-hidden-focusable btn btn-primary position-absolute m-2" href="#contenidoPrincipal">Saltar al contenido principal</a>
 
   <!-- ===================== NAVBAR ===================== -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
         <img src="img/logo-icon.png" alt="Logo de PeopleManager" class="logo-icon">
@@ -30,29 +30,24 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarPrincipal">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+        <ul class="navbar-nav ms-auto mb-2 mb-xl-0 align-items-xl-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
+          <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <!-- Visibles solo para los roles indicados (js/script.js) -->
+          <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
+          <li class="nav-item d-none ms-xl-2" id="navSaludoItem">
+            <button type="button" class="btn btn-link navbar-text-saludo" id="saludoUsuario"></button>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="turnos.html" data-protected-link="turnos">Turnos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="asistencia.html" data-protected-link="asistencia">Asistencia</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="solicitudes.html" data-protected-link="solicitudes">Solicitudes</a>
-          </li>
-          <li class="nav-item d-none" id="navSaludoItem">
-            <span class="navbar-text-saludo" id="saludoUsuario"></span>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-lg-2" id="themeToggle" aria-pressed="false">
-              <i class="bi bi-moon-fill"></i> Oscuro
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-xl-2" id="themeToggle" aria-pressed="false">
+              <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="texto-tema"> Oscuro</span>
             </button>
           </li>
           <li class="nav-item">
-            <a class="btn btn-primary btn-nav-login px-3 ms-lg-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
+            <a class="btn btn-primary btn-nav-login px-3 ms-xl-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
           </li>
         </ul>
       </div>
@@ -63,19 +58,49 @@
     <div class="container">
       <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <div>
-          <h1 class="h3 mb-1">Solicitudes de personal</h1>
-          <p class="text-muted mb-0">Crea solicitudes de permiso, vacaciones o incapacidad, y gestiona su aprobación.</p>
+          <h1 class="h3 mb-1" id="tituloSolicitudes">Solicitudes de personal</h1>
+          <p class="text-muted mb-0" id="subtituloSolicitudes">Revisa y responde las solicitudes de permiso, vacaciones e incapacidad del personal.</p>
         </div>
         <button type="button" class="btn btn-primary" id="btnNuevaSolicitud" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud">
-          + Nueva solicitud
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva solicitud
         </button>
       </div>
 
-      <div id="avisoSinSolicitudes" class="alert alert-info d-none" role="alert">
+      <div class="d-flex flex-wrap gap-2 mb-3" aria-label="Resumen de solicitudes">
+        <span class="badge badge-estado badge-estado-pendiente fs-6">Pendientes: <span id="contadorPendientes">0</span></span>
+        <span class="badge badge-estado badge-estado-confirmado fs-6">Aprobadas: <span id="contadorAprobadas">0</span></span>
+        <span class="badge badge-estado badge-estado-cancelado fs-6">Rechazadas: <span id="contadorRechazadas">0</span></span>
+      </div>
+
+      <div class="filter-bar row gy-2 gx-3 align-items-end mb-3">
+        <div class="col-sm-4 col-lg-3">
+          <label for="filtroEstadoSolicitud" class="form-label mb-1">Estado</label>
+          <select class="form-select" id="filtroEstadoSolicitud">
+            <option value="todas" selected>Todas</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="aprobada">Aprobadas</option>
+            <option value="rechazada">Rechazadas</option>
+          </select>
+        </div>
+        <div class="col-sm-4 col-lg-3">
+          <label for="filtroTipoSolicitud" class="form-label mb-1">Tipo</label>
+          <select class="form-select" id="filtroTipoSolicitud">
+            <option value="todos" selected>Todos los tipos</option>
+          </select>
+        </div>
+        <div class="col-sm-4 col-lg-4" data-solo-gestor>
+          <label for="buscarEmpleadoSolicitud" class="form-label mb-1">Buscar</label>
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="buscarEmpleadoSolicitud" placeholder="Empleado o motivo...">
+          </div>
+        </div>
+      </div>
+
+      <div id="avisoSinSolicitudes" class="alert alert-info d-none" role="status">
         Aún no hay solicitudes registradas.
       </div>
 
-      <!-- Tabla de solicitudes -->
       <div class="table-responsive">
         <table class="table table-hover table-turnos align-middle bg-white">
           <caption class="visually-hidden">Listado de solicitudes de personal</caption>
@@ -83,16 +108,15 @@
             <tr>
               <th scope="col">Empleado</th>
               <th scope="col">Tipo</th>
-              <th scope="col">Desde</th>
-              <th scope="col">Hasta</th>
+              <th scope="col">Periodo</th>
+              <th scope="col" class="text-center">Días</th>
               <th scope="col">Motivo</th>
               <th scope="col">Estado</th>
+              <th scope="col">Respuesta</th>
               <th scope="col">Acciones</th>
             </tr>
           </thead>
-          <tbody id="cuerpoTablaSolicitudes">
-            <!-- Filas generadas por js/script.js -->
-          </tbody>
+          <tbody id="cuerpoTablaSolicitudes"></tbody>
         </table>
       </div>
     </div>
@@ -108,16 +132,22 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <div id="mensajeModalSolicitud" class="alert alert-danger d-none" role="alert">
-              Complete todos los campos para crear la solicitud.
+            <div id="mensajeModalSolicitud" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
+
+            <div class="mb-3" data-solo-gestor>
+              <label for="solicitudEmpleado" class="form-label">Empleado</label>
+              <select class="form-select" id="solicitudEmpleado" aria-describedby="ayudaSolicitudEmpleado">
+                <option value="" selected>Yo mismo(a)</option>
+              </select>
+              <div class="form-text" id="ayudaSolicitudEmpleado">Como gestor puedes radicar la solicitud a nombre de otra persona (por ejemplo, una incapacidad).</div>
             </div>
 
             <div class="mb-3">
               <label for="solicitudTipo" class="form-label">Tipo de solicitud</label>
-              <select class="form-select" id="solicitudTipo" required>
+              <select class="form-select" id="solicitudTipo" required aria-describedby="ayudaSolicitudTipo">
                 <option value="" selected disabled>Seleccione...</option>
-                <!-- Opciones reales cargadas por js/script.js desde /api/catalogos/tipos-solicitud -->
               </select>
+              <div class="form-text" id="ayudaSolicitudTipo">Las incapacidades se pueden reportar hasta 30 días después de su inicio.</div>
             </div>
 
             <div class="row g-3">
@@ -130,10 +160,12 @@
                 <input type="date" class="form-control" id="solicitudFechaFin" required />
               </div>
             </div>
+            <div class="form-text fw-semibold" id="diasSolicitud" aria-live="polite"></div>
 
             <div class="mt-3">
               <label for="solicitudMotivo" class="form-label">Motivo</label>
-              <textarea class="form-control" id="solicitudMotivo" rows="3" required></textarea>
+              <textarea class="form-control" id="solicitudMotivo" rows="3" maxlength="500" required aria-describedby="contadorMotivo"></textarea>
+              <div class="form-text text-end" id="contadorMotivo">0/500</div>
             </div>
           </div>
           <div class="modal-footer">
@@ -151,24 +183,13 @@
       <span>&copy; 2026 PeopleManager. Proyecto formativo SENA.</span>
       <nav aria-label="Enlaces del pie de página">
         <a href="index.html" class="me-3">Inicio</a>
-        <a href="turnos.html" class="me-3" data-protected-link="turnos">Turnos</a>
-        <a href="asistencia.html" class="me-3" data-protected-link="asistencia">Asistencia</a>
-        <a href="solicitudes.html" class="me-3" data-protected-link="solicitudes">Solicitudes</a>
-        <a href="login.html">Iniciar sesión</a>
+        <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
+        <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
+        <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
   </footer>
-
-  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
-    <div id="toastSolicitud" class="toast align-items-center text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body" id="toastSolicitudTexto">
-          Solicitud procesada correctamente.
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/services/ApiService.js"></script>
@@ -177,6 +198,8 @@
   <script src="js/services/TurnoService.js"></script>
   <script src="js/services/AsistenciaService.js"></script>
   <script src="js/services/SolicitudService.js"></script>
+  <script src="js/services/ReporteService.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/paginas/solicitudes.js"></script>
 </body>
 </html>

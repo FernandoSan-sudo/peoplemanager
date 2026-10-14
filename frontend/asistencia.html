@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeopleManager | Asistencia</title>
-  <meta name="description" content="Registra y consulta la asistencia del personal a los turnos asignados en PeopleManager." />
+  <meta name="description" content="Registra la entrada y salida del personal y consulta tardanzas y ausencias." />
   <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/favicon-64.png" />
@@ -19,7 +19,7 @@
   <a class="visually-hidden-focusable btn btn-primary position-absolute m-2" href="#contenidoPrincipal">Saltar al contenido principal</a>
 
   <!-- ===================== NAVBAR ===================== -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
         <img src="img/logo-icon.png" alt="Logo de PeopleManager" class="logo-icon">
@@ -30,29 +30,24 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarPrincipal">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+        <ul class="navbar-nav ms-auto mb-2 mb-xl-0 align-items-xl-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
+          <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <!-- Visibles solo para los roles indicados (js/script.js) -->
+          <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
+          <li class="nav-item d-none ms-xl-2" id="navSaludoItem">
+            <button type="button" class="btn btn-link navbar-text-saludo" id="saludoUsuario"></button>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="turnos.html" data-protected-link="turnos">Turnos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="asistencia.html" data-protected-link="asistencia">Asistencia</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="solicitudes.html" data-protected-link="solicitudes">Solicitudes</a>
-          </li>
-          <li class="nav-item d-none" id="navSaludoItem">
-            <span class="navbar-text-saludo" id="saludoUsuario"></span>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-lg-2" id="themeToggle" aria-pressed="false">
-              <i class="bi bi-moon-fill"></i> Oscuro
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-xl-2" id="themeToggle" aria-pressed="false">
+              <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="texto-tema"> Oscuro</span>
             </button>
           </li>
           <li class="nav-item">
-            <a class="btn btn-primary btn-nav-login px-3 ms-lg-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
+            <a class="btn btn-primary btn-nav-login px-3 ms-xl-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
           </li>
         </ul>
       </div>
@@ -61,72 +56,103 @@
 
   <main id="contenidoPrincipal" class="py-5">
     <div class="container">
-      <div class="mb-4">
-        <h1 class="h3 mb-1">Control de asistencia</h1>
-        <p class="text-muted mb-0">Registra si cada empleado asistió, llegó tarde o faltó a su turno asignado.</p>
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h1 class="h3 mb-1" id="tituloAsistencia">Control de asistencia</h1>
+          <p class="text-muted mb-0" id="subtituloAsistencia">Registra la entrada y salida del personal; tardanzas y ausencias se calculan solas.</p>
+        </div>
+        <div class="reloj text-end" aria-label="Hora actual">
+          <div class="small text-muted">Hora actual</div>
+          <div class="reloj-hora" id="relojActual">--:--:--</div>
+        </div>
       </div>
+
+      <!-- Mi turno de hoy -->
+      <section class="card shadow-sm mb-4 panel-mi-turno" aria-labelledby="tituloMiTurno">
+        <div class="card-body">
+          <h2 class="h5 mb-3" id="tituloMiTurno"><i class="bi bi-person-badge me-1" aria-hidden="true"></i>Mi turno de hoy</h2>
+          <div id="contenidoMiTurno" class="d-grid gap-3"><p class="text-muted mb-0">Cargando...</p></div>
+          <p class="small text-muted mt-3 mb-0">
+            La entrada se habilita 60 minutos antes del inicio del turno. Después de 10 minutos de tolerancia se registra tardanza.
+          </p>
+        </div>
+      </section>
 
       <!-- Resumen -->
-      <div class="row g-4 mb-4">
-        <div class="col-sm-6 col-lg-3">
-          <div class="card stat-card stat-confirmados p-3">
-            <div class="card-body">
-              <p class="text-muted mb-1">Presentes</p>
-              <p class="stat-numero text-success mb-0" id="statPresentes">0</p>
-            </div>
-          </div>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md">
+          <div class="card stat-card stat-confirmados p-2 h-100"><div class="card-body">
+            <p class="text-muted mb-1">Presentes</p><p class="stat-numero text-success mb-0" id="statPresentes">0</p>
+          </div></div>
         </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card stat-card stat-pendientes p-3">
-            <div class="card-body">
-              <p class="text-muted mb-1">Tardanzas</p>
-              <p class="stat-numero mb-0" style="color: var(--pm-warning);" id="statTardanzas">0</p>
-            </div>
-          </div>
+        <div class="col-6 col-md">
+          <div class="card stat-card stat-pendientes p-2 h-100"><div class="card-body">
+            <p class="text-muted mb-1">Tardanzas / salidas</p><p class="stat-numero mb-0" style="color: var(--pm-warning);" id="statTardanzas">0</p>
+          </div></div>
         </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card stat-card stat-cancelados p-3">
-            <div class="card-body">
-              <p class="text-muted mb-1">Ausencias</p>
-              <p class="stat-numero text-danger mb-0" id="statAusencias">0</p>
-            </div>
-          </div>
+        <div class="col-6 col-md">
+          <div class="card stat-card stat-cancelados p-2 h-100"><div class="card-body">
+            <p class="text-muted mb-1">Ausencias</p><p class="stat-numero text-danger mb-0" id="statAusencias">0</p>
+          </div></div>
         </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card stat-card p-3">
-            <div class="card-body">
-              <p class="text-muted mb-1">Sin marcar</p>
-              <p class="stat-numero mb-0 text-muted" id="statSinMarcar">0</p>
-            </div>
-          </div>
+        <div class="col-6 col-md">
+          <div class="card stat-card stat-justificados p-2 h-100"><div class="card-body">
+            <p class="text-muted mb-1">Justificados</p><p class="stat-numero mb-0" style="color: var(--pm-info);" id="statJustificados">0</p>
+          </div></div>
+        </div>
+        <div class="col-12 col-md">
+          <div class="card stat-card p-2 h-100"><div class="card-body">
+            <p class="text-muted mb-1">Sin marcar</p><p class="stat-numero mb-0 text-muted" id="statSinMarcar">0</p>
+          </div></div>
         </div>
       </div>
 
-      <!-- Filtro y búsqueda -->
-      <div class="filter-bar row gy-2 gx-3 align-items-end mb-4">
-        <div class="col-sm-6 col-md-3">
-          <label for="filtroAreaAsistencia" class="form-label mb-1">Filtrar por área</label>
-          <select class="form-select" id="filtroAreaAsistencia">
-            <option value="todas" selected>Todas las áreas</option>
-            <!-- Opciones reales cargadas por js/script.js desde /api/catalogos/areas -->
+      <!-- Filtros -->
+      <div class="filter-bar row gy-2 gx-3 align-items-end mb-3">
+        <div class="col-sm-6 col-lg-3">
+          <label for="filtroFechaAsistencia" class="form-label mb-1">Fecha</label>
+          <input type="date" class="form-control" id="filtroFechaAsistencia" aria-describedby="ayudaFechaAsistencia">
+          <div class="btn-group btn-group-sm mt-1" role="group" aria-label="Fechas rápidas" id="ayudaFechaAsistencia">
+            <button type="button" class="btn btn-outline-secondary" data-fecha="hoy">Hoy</button>
+            <button type="button" class="btn btn-outline-secondary" data-fecha="ayer">Ayer</button>
+            <button type="button" class="btn btn-outline-secondary" data-fecha="todas">Últimos 30 días</button>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+          <label for="filtroEstadoAsistencia" class="form-label mb-1">Estado</label>
+          <select class="form-select" id="filtroEstadoAsistencia">
+            <option value="todos" selected>Todos</option>
+            <option value="pendiente">Sin marcar</option>
+            <option value="completo">Presente</option>
+            <option value="tardanza">Tardanza / salida anticipada</option>
+            <option value="ausente">Ausente</option>
+            <option value="justificado">Justificado</option>
           </select>
         </div>
-        <div class="col-sm-6 col-md-3">
-          <label for="filtroFechaAsistencia" class="form-label mb-1">Filtrar por fecha</label>
-          <input type="date" class="form-control" id="filtroFechaAsistencia">
+        <div class="col-sm-6 col-lg-2" data-solo-gestor>
+          <label for="filtroAreaAsistencia" class="form-label mb-1">Área</label>
+          <select class="form-select" id="filtroAreaAsistencia">
+            <option value="todas" selected>Todas las áreas</option>
+          </select>
         </div>
-        <div class="col-sm-6 col-md-4">
+        <div class="col-sm-6 col-lg-3" data-solo-gestor>
           <label for="buscarEmpleadoAsistencia" class="form-label mb-1">Buscar por empleado</label>
-          <div class="input-group buscador-turnos">
-            <span class="input-group-text bg-white" aria-hidden="true"><i class="bi bi-search"></i></span>
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true"><i class="bi bi-search"></i></span>
             <input type="search" class="form-control" id="buscarEmpleadoAsistencia" placeholder="Nombre del empleado...">
           </div>
         </div>
+        <div class="col-12 col-lg-2 text-lg-end">
+          <button type="button" class="btn btn-outline-success w-100" id="btnExportarAsistencia">
+            <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Exportar CSV
+          </button>
+        </div>
       </div>
 
-      <div id="avisoSinTurnos" class="alert alert-info d-none" role="alert">
-        Aún no hay turnos asignados. Ve al módulo de <a href="turnos.html" data-protected-link="turnos" class="alert-link">Turnos</a> para asignar uno y luego podrás registrar su asistencia aquí.
+      <div id="avisoSinTurnos" class="alert alert-info d-none" role="status">
+        No hay turnos para esta fecha. Los turnos se asignan en el módulo de <a href="turnos.html" class="alert-link">Turnos</a>.
       </div>
+      <p class="small text-muted mb-2" id="contadorAsistencia" aria-live="polite"></p>
 
       <!-- Tabla de asistencia -->
       <div class="table-responsive">
@@ -138,13 +164,13 @@
               <th scope="col">Área</th>
               <th scope="col">Fecha</th>
               <th scope="col">Horario</th>
+              <th scope="col">Entrada</th>
+              <th scope="col">Salida</th>
               <th scope="col">Estado</th>
               <th scope="col">Acciones</th>
             </tr>
           </thead>
-          <tbody id="cuerpoTablaAsistencia">
-            <!-- Filas generadas por js/script.js -->
-          </tbody>
+          <tbody id="cuerpoTablaAsistencia"></tbody>
         </table>
       </div>
     </div>
@@ -156,24 +182,13 @@
       <span>&copy; 2026 PeopleManager. Proyecto formativo SENA.</span>
       <nav aria-label="Enlaces del pie de página">
         <a href="index.html" class="me-3">Inicio</a>
-        <a href="turnos.html" class="me-3" data-protected-link="turnos">Turnos</a>
-        <a href="asistencia.html" class="me-3" data-protected-link="asistencia">Asistencia</a>
-        <a href="solicitudes.html" class="me-3" data-protected-link="solicitudes">Solicitudes</a>
-        <a href="login.html">Iniciar sesión</a>
+        <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
+        <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
+        <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="login.html" data-sin-sesion>Iniciar sesión</a>
       </nav>
     </div>
   </footer>
-
-  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
-    <div id="toastAsistenciaGuardada" class="toast align-items-center text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body" id="toastAsistenciaGuardadaTexto">
-          Asistencia actualizada.
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/services/ApiService.js"></script>
@@ -182,6 +197,8 @@
   <script src="js/services/TurnoService.js"></script>
   <script src="js/services/AsistenciaService.js"></script>
   <script src="js/services/SolicitudService.js"></script>
+  <script src="js/services/ReporteService.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/paginas/asistencia.js"></script>
 </body>
 </html>

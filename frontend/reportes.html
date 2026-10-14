@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeopleManager | Reportes</title>
+  <meta name="description" content="Reportes de asistencia por empleado y bitácora de auditoría de PeopleManager." />
+  <link rel="icon" href="assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="assets/favicon-64.png" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body>
+
+  <a class="visually-hidden-focusable btn btn-primary position-absolute m-2" href="#contenidoPrincipal">Saltar al contenido principal</a>
+
+  <!-- ===================== NAVBAR ===================== -->
+  <nav class="navbar navbar-expand-xl navbar-light bg-white border-bottom sticky-top" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center fw-bold" href="index.html">
+        <img src="img/logo-icon.png" alt="Logo de PeopleManager" class="logo-icon">
+        PeopleManager
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal"
+        aria-controls="navbarPrincipal" aria-expanded="false" aria-label="Abrir menú de navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarPrincipal">
+        <ul class="navbar-nav ms-auto mb-2 mb-xl-0 align-items-xl-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html" data-protected-link>Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="asistencia.html" data-protected-link>Asistencia</a></li>
+          <li class="nav-item"><a class="nav-link" href="solicitudes.html" data-protected-link>Solicitudes</a></li>
+          <!-- Visibles solo para los roles indicados (js/script.js) -->
+          <li class="nav-item d-none" data-roles="Administrador,RRHH"><a class="nav-link" href="usuarios.html">Usuarios</a></li>
+          <li class="nav-item d-none" data-roles="Administrador,Supervisor,RRHH"><a class="nav-link" href="reportes.html">Reportes</a></li>
+          <li class="nav-item d-none ms-xl-2" id="navSaludoItem">
+            <button type="button" class="btn btn-link navbar-text-saludo" id="saludoUsuario"></button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle ms-xl-2" id="themeToggle" aria-pressed="false">
+              <i class="bi bi-moon-fill" aria-hidden="true"></i><span class="texto-tema"> Oscuro</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-primary btn-nav-login px-3 ms-xl-2" href="login.html" id="btnAuthAction">Iniciar sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main id="contenidoPrincipal" class="py-5">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h1 class="h3 mb-1">Reportes de asistencia</h1>
+          <p class="text-muted mb-0">Consolidado por empleado: <span id="periodoReporte">—</span></p>
+        </div>
+        <button type="button" class="btn btn-outline-success" id="btnExportarReporte">
+          <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Exportar CSV
+        </button>
+      </div>
+
+      <div class="filter-bar row gy-2 gx-3 align-items-end mb-4">
+        <div class="col-sm-6 col-lg-2">
+          <label for="repDesde" class="form-label mb-1">Desde</label>
+          <input type="date" class="form-control" id="repDesde">
+        </div>
+        <div class="col-sm-6 col-lg-2">
+          <label for="repHasta" class="form-label mb-1">Hasta</label>
+          <input type="date" class="form-control" id="repHasta">
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label for="repArea" class="form-label mb-1">Área</label>
+          <select class="form-select" id="repArea">
+            <option value="todas" selected>Todas las áreas</option>
+          </select>
+        </div>
+        <div class="col-sm-6 col-lg-5">
+          <div class="btn-group btn-group-sm flex-wrap" role="group" aria-label="Periodos rápidos">
+            <button type="button" class="btn btn-outline-secondary" data-periodo="mes">Este mes</button>
+            <button type="button" class="btn btn-outline-secondary" data-periodo="mes-anterior">Mes anterior</button>
+            <button type="button" class="btn btn-outline-secondary" data-periodo="7">Últimos 7 días</button>
+            <button type="button" class="btn btn-outline-secondary" data-periodo="proximos">Próximos 30 días</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg"><div class="card stat-card p-2 h-100"><div class="card-body"><p class="text-muted mb-1">Turnos</p><p class="stat-numero mb-0" id="kpiTurnos">0</p></div></div></div>
+        <div class="col-6 col-lg"><div class="card stat-card stat-confirmados p-2 h-100"><div class="card-body"><p class="text-muted mb-1">% asistencia</p><p class="stat-numero text-success mb-0" id="kpiAsistencia">—</p></div></div></div>
+        <div class="col-6 col-lg"><div class="card stat-card stat-pendientes p-2 h-100"><div class="card-body"><p class="text-muted mb-1">Tardanzas</p><p class="stat-numero mb-0" style="color: var(--pm-warning);" id="kpiTardanzas">0</p><p class="small text-muted mb-0" id="kpiMinutos">0 min</p></div></div></div>
+        <div class="col-6 col-lg"><div class="card stat-card stat-cancelados p-2 h-100"><div class="card-body"><p class="text-muted mb-1">Ausencias</p><p class="stat-numero text-danger mb-0" id="kpiAusencias">0</p></div></div></div>
+        <div class="col-6 col-lg"><div class="card stat-card stat-justificados p-2 h-100"><div class="card-body"><p class="text-muted mb-1">Justificados</p><p class="stat-numero mb-0" style="color: var(--pm-info);" id="kpiJustificados">0</p></div></div></div>
+        <div class="col-6 col-lg"><div class="card stat-card p-2 h-100"><div class="card-body"><p class="text-muted mb-1">Horas trabajadas / programadas</p><p class="fs-5 fw-bold mb-0" id="kpiHoras">0 / 0 h</p></div></div></div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-turnos align-middle bg-white">
+          <caption class="visually-hidden">Consolidado de asistencia por empleado</caption>
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Empleado</th>
+              <th scope="col" class="text-center">Turnos</th>
+              <th scope="col" class="text-center">Asistidos</th>
+              <th scope="col" class="text-center">Tardanzas</th>
+              <th scope="col" class="text-center">Min. tardanza</th>
+              <th scope="col" class="text-center">Ausencias</th>
+              <th scope="col" class="text-center">Justificados</th>
+              <th scope="col" class="text-center">Horas prog.</th>
+              <th scope="col" class="text-center">Horas trab.</th>
+              <th scope="col">Cumplimiento</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpoTablaReporte"></tbody>
+        </table>
+      </div>
+      <p class="small text-muted mt-2">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        El cumplimiento compara turnos asistidos contra turnos que ya debían cumplirse; no cuenta los pendientes ni los justificados por una solicitud aprobada.
+      </p>
+
+      <!-- ===================== AUDITORÍA (solo Administrador) ===================== -->
+      <section class="mt-5 d-none" data-roles="Administrador" aria-labelledby="tituloAuditoria">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+          <div>
+            <h2 class="h4 mb-1" id="tituloAuditoria"><i class="bi bi-journal-text me-1" aria-hidden="true"></i>Bitácora de auditoría</h2>
+            <p class="text-muted mb-0">Quién hizo qué y cuándo (tabla pm.auditoria).</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-end">
+            <div>
+              <label for="filtroAccionAuditoria" class="form-label mb-1 small">Acción</label>
+              <select class="form-select form-select-sm" id="filtroAccionAuditoria"><option value="todas" selected>Todas</option></select>
+            </div>
+            <div>
+              <label for="limiteAuditoria" class="form-label mb-1 small">Mostrar</label>
+              <select class="form-select form-select-sm" id="limiteAuditoria">
+                <option value="50">50</option><option value="100" selected>100</option><option value="500">500</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-success" id="btnExportarAuditoria">
+              <i class="bi bi-download" aria-hidden="true"></i> CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-turnos align-middle bg-white">
+            <caption class="visually-hidden">Bitácora de auditoría</caption>
+            <thead class="table-light">
+              <tr><th scope="col">Fecha</th><th scope="col">Usuario</th><th scope="col">Acción</th><th scope="col">Registro</th><th scope="col">Detalle</th></tr>
+            </thead>
+            <tbody id="cuerpoTablaAuditoria"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="py-4 mt-auto">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <span>&copy; 2026 PeopleManager. Proyecto formativo SENA.</span>
+      <nav aria-label="Enlaces del pie de página">
+        <a href="index.html" class="me-3">Inicio</a>
+        <a href="turnos.html" class="me-3" data-protected-link>Turnos</a>
+        <a href="asistencia.html" class="me-3" data-protected-link>Asistencia</a>
+        <a href="solicitudes.html" class="me-3" data-protected-link>Solicitudes</a>
+        <a href="login.html" data-sin-sesion>Iniciar sesión</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/services/ApiService.js"></script>
+  <script src="js/services/UsuarioService.js"></script>
+  <script src="js/services/CatalogoService.js"></script>
+  <script src="js/services/TurnoService.js"></script>
+  <script src="js/services/AsistenciaService.js"></script>
+  <script src="js/services/SolicitudService.js"></script>
+  <script src="js/services/ReporteService.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/paginas/reportes.js"></script>
+</body>
+</html>

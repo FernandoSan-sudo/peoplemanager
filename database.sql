@@ -186,7 +186,8 @@ CREATE INDEX IF NOT EXISTS idx_nomina_periodo  ON nomina(periodo_anio, periodo_m
 INSERT INTO roles (nombre_rol, descripcion) VALUES
   ('Administrador', 'Gestión general del sistema, usuarios y configuración'),
   ('Supervisor', 'Gestión de turnos, asistencia y aprobación de solicitudes de su área'),
-  ('Empleado', 'Consulta sus turnos, registra su asistencia y crea solicitudes')
+  ('Empleado', 'Consulta sus turnos, registra su asistencia y crea solicitudes'),
+  ('RRHH', 'Gestión de personal, solicitudes y reportes')
 ON CONFLICT (nombre_rol) DO NOTHING;
 
 INSERT INTO areas (nombre_area, descripcion) VALUES

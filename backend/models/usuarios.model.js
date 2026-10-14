@@ -3,24 +3,24 @@
  * -----------------------------------------------------------
  * Acceso a datos para pm.usuarios. Los SELECT que exponen la
  * lista o el detalle de un usuario nunca incluyen la contraseña
- * (ni el hash), salvo obtenerPorCorreo, de uso interno exclusivo
- * del proceso de login.
+ * (ni el hash), salvo obtenerPorCorreo y obtenerHash, de uso
+ * interno exclusivo del login y del cambio de contraseña.
  *
  * Los SELECT hacen JOIN con roles/areas/cargos para devolver el
  * nombre legible (nombre_rol, nombre_area, nombre_cargo) y no
- * solo el id, que es lo que necesita el front-end para mostrar
- * información sin tener que hacer una consulta aparte por cada
- * usuario.
+ * solo el id.
  */
 
 const pool = require("../config/database");
+
+const MAX_INTENTOS_FALLIDOS = 5;
 
 const CAMPOS_PUBLICOS = `
   u.id_usuario, u.numero_documento, u.nombre_completo, u.correo,
   u.id_rol, r.nombre_rol,
   u.id_area, a.nombre_area,
   u.id_cargo, c.nombre_cargo,
-  u.estado, u.bloqueado, u.fecha_creacion, u.fecha_modificacion
+  u.estado, u.bloqueado, u.intentos_fallidos, u.fecha_creacion, u.fecha_modificacion
 `;
 
 const JOINS = `
@@ -30,42 +30,68 @@ const JOINS = `
   LEFT JOIN cargos c ON c.id_cargo = u.id_cargo
 `;
 
-const obtenerTodos = (callback) => {
-  const sql = `SELECT ${CAMPOS_PUBLICOS} ${JOINS} ORDER BY u.id_usuario`;
-  pool.query(sql, (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
+const obtenerTodos = async ({ estado } = {}) => {
+  const valores = [];
+  let filtro = "";
+  if (estado) {
+    valores.push(estado);
+    filtro = "WHERE u.estado = $1";
+  }
+  const { rows } = await pool.query(`SELECT ${CAMPOS_PUBLICOS} ${JOINS} ${filtro} ORDER BY u.nombre_completo`, valores);
+  return rows;
 };
 
-const obtenerPorId = (id, callback) => {
-  const sql = `SELECT ${CAMPOS_PUBLICOS} ${JOINS} WHERE u.id_usuario = $1`;
-  pool.query(sql, [id], (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
+const obtenerPorId = async (id) => {
+  const { rows } = await pool.query(`SELECT ${CAMPOS_PUBLICOS} ${JOINS} WHERE u.id_usuario = $1`, [id]);
+  return rows[0] || null;
 };
 
-/** Uso interno exclusivo del login: incluye contrasena_hash, intentos_fallidos y bloqueado. */
-const obtenerPorCorreo = (correo, callback) => {
+/** Datos mínimos que el middleware de autenticación revisa en cada petición. */
+const obtenerDatosSesion = async (id) => {
   const sql = `
-    SELECT id_usuario, nombre_completo, correo, contrasena_hash, estado, intentos_fallidos, bloqueado
-    FROM usuarios
-    WHERE correo = $1
+    SELECT u.id_usuario, u.nombre_completo, u.correo, u.estado, u.bloqueado, u.id_area, u.id_rol, r.nombre_rol
+    FROM usuarios u
+    JOIN roles r ON r.id_rol = u.id_rol
+    WHERE u.id_usuario = $1
   `;
-  pool.query(sql, [correo], (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
+  const { rows } = await pool.query(sql, [id]);
+  return rows[0] || null;
 };
 
-const crear = (usuario, callback) => {
+/** Uso interno exclusivo del login: incluye contrasena_hash, intentos_fallidos y bloqueado. El correo no distingue mayúsculas. */
+const obtenerPorCorreo = async (correo) => {
+  const sql = `
+    SELECT u.id_usuario, u.nombre_completo, u.correo, u.contrasena_hash, u.estado,
+           u.intentos_fallidos, u.bloqueado, u.id_rol, r.nombre_rol, u.id_area
+    FROM usuarios u
+    JOIN roles r ON r.id_rol = u.id_rol
+    WHERE LOWER(u.correo) = LOWER($1)
+  `;
+  const { rows } = await pool.query(sql, [correo]);
+  return rows[0] || null;
+};
+
+const obtenerHash = async (id) => {
+  const { rows } = await pool.query("SELECT contrasena_hash FROM usuarios WHERE id_usuario = $1", [id]);
+  return rows[0] ? rows[0].contrasena_hash : null;
+};
+
+/** ¿Existe otro usuario con ese correo (sin importar mayúsculas)? Sirve para dar un 409 claro antes del INSERT/UPDATE. */
+const existeCorreo = async (correo, excluirId = null) => {
+  const { rows } = await pool.query(
+    "SELECT 1 FROM usuarios WHERE LOWER(correo) = LOWER($1) AND ($2::int IS NULL OR id_usuario <> $2)",
+    [correo, excluirId]
+  );
+  return rows.length > 0;
+};
+
+const crear = async (usuario) => {
   const sql = `
     INSERT INTO usuarios (numero_documento, nombre_completo, correo, contrasena_hash, id_rol, id_area, id_cargo)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING id_usuario
   `;
-  const valores = [
+  const { rows } = await pool.query(sql, [
     usuario.numero_documento,
     usuario.nombre_completo,
     usuario.correo,
@@ -73,21 +99,19 @@ const crear = (usuario, callback) => {
     usuario.id_rol,
     usuario.id_area || null,
     usuario.id_cargo || null,
-  ];
-  pool.query(sql, valores, (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, { insertId: resultado.rows[0].id_usuario });
-  });
+  ]);
+  return rows[0].id_usuario;
 };
 
-const actualizar = (id, usuario, callback) => {
+/** Devuelve la cantidad de filas actualizadas (0 = el usuario no existe). */
+const actualizar = async (id, usuario) => {
   const sql = `
     UPDATE usuarios
     SET nombre_completo = $1, correo = $2, id_rol = $3, id_area = $4, id_cargo = $5,
         estado = $6, fecha_modificacion = CURRENT_TIMESTAMP
     WHERE id_usuario = $7
   `;
-  const valores = [
+  const { rowCount } = await pool.query(sql, [
     usuario.nombre_completo,
     usuario.correo,
     usuario.id_rol,
@@ -95,52 +119,70 @@ const actualizar = (id, usuario, callback) => {
     usuario.id_cargo || null,
     usuario.estado,
     id,
-  ];
-  pool.query(sql, valores, (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, { affectedRows: resultado.rowCount });
-  });
+  ]);
+  return rowCount;
 };
 
 /** Eliminación lógica (RF-03): marca el usuario como inactivo, no borra la fila ni su historial relacionado. */
-const eliminarLogico = (id, callback) => {
+const eliminarLogico = async (id) => {
+  const { rowCount } = await pool.query(
+    "UPDATE usuarios SET estado = 'inactivo', fecha_modificacion = CURRENT_TIMESTAMP WHERE id_usuario = $1",
+    [id]
+  );
+  return rowCount;
+};
+
+/**
+ * Suma un intento fallido y bloquea al llegar al máximo. Se hace en una
+ * sola sentencia (intentos_fallidos + 1) para que dos intentos simultáneos
+ * no se "pisen" y cuenten como uno solo.
+ */
+const registrarIntentoFallido = async (idUsuario) => {
   const sql = `
     UPDATE usuarios
-    SET estado = 'inactivo', fecha_modificacion = CURRENT_TIMESTAMP
+    SET intentos_fallidos = COALESCE(intentos_fallidos, 0) + 1,
+        bloqueado = (COALESCE(intentos_fallidos, 0) + 1) >= $2
     WHERE id_usuario = $1
+    RETURNING intentos_fallidos, bloqueado
   `;
-  pool.query(sql, [id], (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, { affectedRows: resultado.rowCount });
-  });
+  const { rows } = await pool.query(sql, [idUsuario, MAX_INTENTOS_FALLIDOS]);
+  return rows[0];
 };
 
-const registrarIntentoFallido = (idUsuario, intentosActuales, callback) => {
-  const nuevosIntentos = intentosActuales + 1;
-  const bloquear = nuevosIntentos >= 5;
-  const sql = `
-    UPDATE usuarios
-    SET intentos_fallidos = $1, bloqueado = $2
-    WHERE id_usuario = $3
-  `;
-  pool.query(sql, [nuevosIntentos, bloquear, idUsuario], (error) => {
-    if (error) return callback(error);
-    callback(null, { bloqueado: bloquear });
-  });
+const reiniciarIntentosFallidos = async (idUsuario) => {
+  await pool.query("UPDATE usuarios SET intentos_fallidos = 0 WHERE id_usuario = $1", [idUsuario]);
 };
 
-const reiniciarIntentosFallidos = (idUsuario, callback) => {
-  const sql = `UPDATE usuarios SET intentos_fallidos = 0 WHERE id_usuario = $1`;
-  pool.query(sql, [idUsuario], callback);
+/** Desbloqueo manual por un administrador: reinicia el contador y quita el bloqueo. */
+const desbloquear = async (id) => {
+  const { rowCount } = await pool.query(
+    "UPDATE usuarios SET bloqueado = FALSE, intentos_fallidos = 0, fecha_modificacion = CURRENT_TIMESTAMP WHERE id_usuario = $1",
+    [id]
+  );
+  return rowCount;
+};
+
+const actualizarPassword = async (id, contrasenaHash) => {
+  const { rowCount } = await pool.query(
+    "UPDATE usuarios SET contrasena_hash = $1, fecha_modificacion = CURRENT_TIMESTAMP WHERE id_usuario = $2",
+    [contrasenaHash, id]
+  );
+  return rowCount;
 };
 
 module.exports = {
+  MAX_INTENTOS_FALLIDOS,
   obtenerTodos,
   obtenerPorId,
+  obtenerDatosSesion,
   obtenerPorCorreo,
+  obtenerHash,
+  existeCorreo,
   crear,
   actualizar,
   eliminarLogico,
   registrarIntentoFallido,
   reiniciarIntentosFallidos,
+  desbloquear,
+  actualizarPassword,
 };

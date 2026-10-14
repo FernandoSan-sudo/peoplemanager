@@ -2,8 +2,8 @@
    SolicitudService.js
    -----------------------------------------------------------
    Operaciones sobre /api/solicitudes: crear, listar y
-   aprobar/rechazar (aprobar/rechazar las hace un supervisor o
-   administrador).
+   aprobar/rechazar (aprobar/rechazar las hace un gestor:
+   Administrador, Supervisor o RRHH).
    ========================================================= */
 
 class SolicitudService {
@@ -11,9 +11,9 @@ class SolicitudService {
     this.api = api;
   }
 
-  obtenerTodas(idUsuario) {
-    const query = idUsuario ? `?id_usuario=${idUsuario}` : "";
-    return this.api.get(`/solicitudes${query}`);
+  /** @param {{ id_usuario?, estado? }} filtros */
+  obtenerTodas(filtros = {}) {
+    return this.api.get(`/solicitudes${ApiService.construirQuery(filtros)}`);
   }
 
   obtenerPorId(id) {
@@ -24,12 +24,12 @@ class SolicitudService {
     return this.api.post("/solicitudes", datosSolicitud);
   }
 
-  aprobar(id, idAprobador, observacion) {
-    return this.api.put(`/solicitudes/${id}/aprobar`, { id_aprobador: idAprobador, observacion_resp: observacion });
+  aprobar(id, observacion) {
+    return this.api.put(`/solicitudes/${id}/aprobar`, { observacion_resp: observacion });
   }
 
-  rechazar(id, idAprobador, observacion) {
-    return this.api.put(`/solicitudes/${id}/rechazar`, { id_aprobador: idAprobador, observacion_resp: observacion });
+  rechazar(id, observacion) {
+    return this.api.put(`/solicitudes/${id}/rechazar`, { observacion_resp: observacion });
   }
 }
 

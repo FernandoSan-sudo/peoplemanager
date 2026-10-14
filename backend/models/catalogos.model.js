@@ -8,32 +8,19 @@
 
 const pool = require("../config/database");
 
-const obtenerRoles = (callback) => {
-  pool.query("SELECT id_rol, nombre_rol, descripcion FROM roles ORDER BY nombre_rol", (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
-};
+const consultar = async (sql, valores = []) => (await pool.query(sql, valores)).rows;
 
-const obtenerAreas = (callback) => {
-  pool.query("SELECT id_area, nombre_area, descripcion FROM areas ORDER BY nombre_area", (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
-};
+const obtenerRoles = () => consultar("SELECT id_rol, nombre_rol, descripcion FROM roles ORDER BY nombre_rol");
 
-const obtenerCargos = (callback) => {
-  pool.query("SELECT id_cargo, nombre_cargo FROM cargos ORDER BY nombre_cargo", (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
-};
+const obtenerAreas = () => consultar("SELECT id_area, nombre_area, descripcion FROM areas ORDER BY nombre_area");
 
-const obtenerTiposSolicitud = (callback) => {
-  pool.query("SELECT id_tipo, nombre_tipo FROM tipos_solicitud ORDER BY nombre_tipo", (error, resultado) => {
-    if (error) return callback(error);
-    callback(null, resultado.rows);
-  });
+const obtenerCargos = () => consultar("SELECT id_cargo, nombre_cargo, nivel FROM cargos ORDER BY nombre_cargo");
+
+const obtenerTiposSolicitud = () => consultar("SELECT id_tipo, nombre_tipo FROM tipos_solicitud ORDER BY nombre_tipo");
+
+const obtenerTipoSolicitudPorId = async (id) => {
+  const filas = await consultar("SELECT id_tipo, nombre_tipo FROM tipos_solicitud WHERE id_tipo = $1", [id]);
+  return filas[0] || null;
 };
 
 module.exports = {
@@ -41,4 +28,5 @@ module.exports = {
   obtenerAreas,
   obtenerCargos,
   obtenerTiposSolicitud,
+  obtenerTipoSolicitudPorId,
 };

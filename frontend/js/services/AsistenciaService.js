@@ -2,9 +2,8 @@
    AsistenciaService.js
    -----------------------------------------------------------
    Registra entrada/salida contra /api/asistencia. El estado
-   (a tiempo, tardanza, salida anticipada) lo calcula el
-   backend comparando la hora real contra el turno; aquí solo
-   se envían los ids necesarios.
+   (a tiempo, tardanza, salida anticipada) y la hora los pone
+   el backend; aquí solo se envía el id del turno.
    ========================================================= */
 
 class AsistenciaService {
@@ -12,12 +11,17 @@ class AsistenciaService {
     this.api = api;
   }
 
-  registrarEntrada(idTurno, idUsuario) {
-    return this.api.post("/asistencia/entrada", { id_turno: idTurno, id_usuario: idUsuario });
+  registrarEntrada(idTurno) {
+    return this.api.post("/asistencia/entrada", { id_turno: idTurno });
   }
 
   registrarSalida(idTurno) {
     return this.api.post("/asistencia/salida", { id_turno: idTurno });
+  }
+
+  /** Historial con horas trabajadas. @param {{ id_usuario?, desde?, hasta? }} filtros */
+  obtenerHistorial(filtros = {}) {
+    return this.api.get(`/asistencia${ApiService.construirQuery(filtros)}`);
   }
 
   obtenerPorUsuario(idUsuario) {
